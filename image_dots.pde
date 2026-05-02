@@ -5,6 +5,7 @@ import processing.svg.*;
 
 ImageDotsData data;
 DataGUI dataGui;
+DotsGenerator generator;
 PGraphics current_graphics;
 ControlP5 cp5;
 
@@ -15,6 +16,7 @@ void setup()
 
   data = new ImageDotsData();
   dataGui = new DataGUI(data);
+  generator = new DotsGenerator();
 
   setupControls();
 
@@ -36,7 +38,14 @@ void draw()
   data.image.buildBlurredImage();
   data.image.draw();
 
-  // TODO: draw dots
+  if (data.any_change())
+  {
+    generator.generate(data.dots);
+    data.reset_all_changes();
+  }
+
+  if (data.dots.draw)
+    generator.draw();
 
   end_draw();
 }

@@ -2,7 +2,7 @@
   "Style": {
     "backgroundColor": -1,
     "lineColor": -16777216,
-    "lineWidth": 0
+    "lineWidth": 4.099999904632568
   },
   "Page": {
     "clipping": false,
@@ -12,10 +12,17 @@
     "paper_format": 0,
     "global_scale": 1
   },
+  "Dots": {
+    "surfaceWidth": 853.6666870117188,
+    "maxCandidates": 30,
+    "surfaceHeight": 1221.0001220703125,
+    "minDist": 63.36000061035156,
+    "draw": true
+  },
   "Image": {
     "reset_image": false,
     "Blur": 1,
-    "ImageAlpha": 255,
+    "ImageAlpha": 68,
     "Width": 776,
     "Contrast": 0,
     "source_file": "eye2.png"

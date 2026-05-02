@@ -6,6 +6,7 @@ class DataGUI extends MainPanel
   FileGUI file_ui;
   ImageGUI images_ui;
   StyleGUI style_ui;
+  DotsGUI dots_ui;
 
   public DataGUI(ImageDotsData data)
   {
@@ -13,6 +14,7 @@ class DataGUI extends MainPanel
     file_ui = new FileGUI(data);
     images_ui = new ImageGUI(data.image);
     style_ui = new StyleGUI(data.style);
+    dots_ui = new DotsGUI(data.dots);
   }
 
   void Init()
@@ -20,9 +22,10 @@ class DataGUI extends MainPanel
     addTab(file_ui);
     addTab(images_ui);
     addTab(style_ui);
+    addTab(dots_ui);
 
     super.Init();
 
-    cp5.getTab("Image").bringToFront();
+    cp5.getTab("Dots").bringToFront();
   }
 }
