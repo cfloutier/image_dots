@@ -10,7 +10,9 @@ class DotsGenerator
   {
     points.clear();
 
-    println("DotsGenerator.generate() minDist=" + data.minDist + " maxCandidates=" + data.maxCandidates);
+    println("DotsGenerator.generate() minDist=" + data.minDist + " maxCandidates=" + data.maxCandidates + " seed=" + data.seed);
+
+    randomSeed(data.seed);
 
     float r    = data.minDist;
     float cell = r / sqrt(2);
