@@ -19,6 +19,7 @@ class DotsGUI extends GUIPanel
   Slider surfaceWidth;
   Slider surfaceHeight;
   Slider minDist;
+  Slider maxCandidates;
 
   DotsGUI(DataDots dots)
   {
@@ -35,6 +36,8 @@ class DotsGUI extends GUIPanel
     surfaceHeight = addSlider("surfaceHeight", "Surface Height", 100, 2000);
     nextLine();
     minDist       = addSlider("minDist",       "Min Distance",   2, 80);
+    nextLine();
+    maxCandidates = addSlider("maxCandidates", "Max Candidates", 1, 60);
   }
 
   void setGUIValues()
@@ -42,6 +45,7 @@ class DotsGUI extends GUIPanel
     surfaceWidth.setValue(dots.surfaceWidth);
     surfaceHeight.setValue(dots.surfaceHeight);
     minDist.setValue(dots.minDist);
+    maxCandidates.setValue(dots.maxCandidates);
   }
 
   void update_ui() {}

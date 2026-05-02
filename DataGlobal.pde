@@ -17,6 +17,6 @@ class ImageDotsData extends DataGlobal
   {
     image.CopyFrom(new DataImage());
     style.CopyFrom(new Style());
-    dots = new DataDots();
+    dots.CopyFrom(new DataDots());
   }
 }
