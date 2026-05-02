@@ -5,12 +5,14 @@ class ImageDotsData extends DataGlobal
   DataImage image = new DataImage();
   Style style = new Style();
   DataDots dots = new DataDots();
+  DataFilter filter = new DataFilter();
 
   ImageDotsData()
   {
     addChapter(image);
     addChapter(style);
     addChapter(dots);
+    addChapter(filter);
   }
 
   void reset()
@@ -18,5 +20,6 @@ class ImageDotsData extends DataGlobal
     image.CopyFrom(new DataImage());
     style.CopyFrom(new Style());
     dots.CopyFrom(new DataDots());
+    filter.CopyFrom(new DataFilter());
   }
 }

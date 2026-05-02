@@ -17,6 +17,7 @@ class DotsGUI extends GUIPanel
 {
   DataDots dots;
 
+  Toggle draw;
   Slider surfaceWidth;
   Slider surfaceHeight;
   Slider minDist;
@@ -34,6 +35,8 @@ class DotsGUI extends GUIPanel
   {
     super.Init();
 
+    draw          = addToggle("draw",          "Draw");
+    nextLine();
     surfaceWidth  = addSlider("surfaceWidth",  "Surface Width",  100, 2000);
     nextLine();
     surfaceHeight = addSlider("surfaceHeight", "Surface Height", 100, 2000);
@@ -48,6 +51,7 @@ class DotsGUI extends GUIPanel
 
   void setGUIValues()
   {
+    draw.setValue(dots.draw);
     surfaceWidth.setValue(dots.surfaceWidth);
     surfaceHeight.setValue(dots.surfaceHeight);
     minDist.setValue(dots.minDist);
