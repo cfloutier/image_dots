@@ -18,7 +18,7 @@ void setup()
 
   setupControls();
 
-  //data.LoadSettings("./Settings/default.json");
+  data.LoadSettings("./Settings/default.json");
   dataGui.setGUIValues();
 }
 
