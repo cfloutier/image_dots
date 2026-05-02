@@ -1,0 +1,23 @@
+{
+  "Style": {
+    "backgroundColor": -16777216,
+    "lineColor": -1,
+    "lineWidth": 0
+  },
+  "Page": {
+    "clipping": false,
+    "clip_width": 0,
+    "margin": 2,
+    "clip_height": 0,
+    "paper_format": 0,
+    "global_scale": 1
+  },
+  "Image": {
+    "reset_image": true,
+    "Blur": 1,
+    "ImageAlpha": 0,
+    "Width": 200,
+    "Contrast": 0,
+    "source_file": "eye2.jpg"
+  }
+}

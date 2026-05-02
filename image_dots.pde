@@ -18,7 +18,7 @@ void setup()
 
   setupControls();
 
-  data.LoadSettings("./Settings/default.json");
+  //data.LoadSettings("./Settings/default.json");
   dataGui.setGUIValues();
 }
 
@@ -33,11 +33,10 @@ void draw()
 {
   start_draw();
 
-  pushMatrix();
-  scale(data.page.global_scale, data.page.global_scale);
+  data.image.buildBlurredImage();
+  data.image.draw();
 
   // TODO: draw dots
 
-  popMatrix();
   end_draw();
 }
