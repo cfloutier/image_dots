@@ -4,22 +4,18 @@ class DataDots extends GenericData
     super("Dots");
   }
 
-  float surfaceWidth  = 800;
-  float surfaceHeight = 600;
-  float minDist       = 12;   // distance minimale entre points (contrôle la densité)
-  int   maxCandidates = 30;   // paramètre k de Bridson
+  float minDist       = 12;
+  int   maxCandidates = 30;
   int   seed          = 42;
-  boolean draw        = true;
 }
 
 
 class DotsGUI extends GUIPanel
 {
   DataDots dots;
+  boolean draw = false;
 
-  Toggle draw;
-  Slider surfaceWidth;
-  Slider surfaceHeight;
+  Toggle draw_toggle;
   Slider minDist;
   Slider maxCandidates;
   Textlabel seedLabel;
@@ -35,13 +31,9 @@ class DotsGUI extends GUIPanel
   {
     super.Init();
 
-    draw          = addToggle("draw",          "Draw");
+    draw_toggle   = addToggle("draw_dots", "Draw");
     nextLine();
-    surfaceWidth  = addSlider("surfaceWidth",  "Surface Width",  100, 2000);
-    nextLine();
-    surfaceHeight = addSlider("surfaceHeight", "Surface Height", 100, 2000);
-    nextLine();
-    minDist       = addSlider("minDist",       "Min Distance",   2, 80);
+    minDist       = addSlider("minDist",       "Min Distance",   0.1, 10);
     nextLine();
     maxCandidates = addSlider("maxCandidates", "Max Candidates", 1, 60);
     nextLine();
@@ -51,9 +43,7 @@ class DotsGUI extends GUIPanel
 
   void setGUIValues()
   {
-    draw.setValue(dots.draw);
-    surfaceWidth.setValue(dots.surfaceWidth);
-    surfaceHeight.setValue(dots.surfaceHeight);
+    draw_toggle.setValue(draw);
     minDist.setValue(dots.minDist);
     maxCandidates.setValue(dots.maxCandidates);
     seedLabel.setText("Seed: " + dots.seed);
@@ -69,6 +59,11 @@ class DotsGUI extends GUIPanel
     if (theEvent.isController())
     {
       Controller c = theEvent.getController();
+      if (c == draw_toggle)
+      {
+        draw = draw_toggle.getValue() > 0.5;
+        return;
+      }
       if (c == newSeedButton)
       {
         dots.seed = (int)random(100000);

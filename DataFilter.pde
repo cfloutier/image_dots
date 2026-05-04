@@ -4,8 +4,7 @@ class DataFilter extends GenericData
     super("Filter");
   }
 
-  boolean draw      = true;
-  boolean black     = true;   // true = garder les zones sombres
+  boolean black     = true;
 
   float threshold   = 128;
   float min_value   = 0;
@@ -17,8 +16,9 @@ class DataFilter extends GenericData
 class FilterGUI extends GUIPanel
 {
   DataFilter filter;
+  boolean draw = false;
 
-  Toggle draw;
+  Toggle draw_toggle;
   Toggle black;
   Slider threshold;
   Slider min_value;
@@ -35,10 +35,10 @@ class FilterGUI extends GUIPanel
   {
     super.Init();
 
-    draw      = addToggle("draw",      "Draw");
-    black     = addToggle("black",     "Dark zones");
+    draw_toggle = addToggle("draw_filter", "Draw");
+    black       = addToggle("black", "Dark zones");
     nextLine();
-    threshold = addSlider("threshold", "Threshold", 0, 255);
+    threshold = addSlider("threshold", "Density",    0, 255);
     nextLine();
     min_value = addSlider("min_value", "Min Value", 0, 255);
     nextLine();
@@ -49,7 +49,7 @@ class FilterGUI extends GUIPanel
 
   void setGUIValues()
   {
-    draw.setValue(filter.draw);
+    draw_toggle.setValue(draw);
     black.setValue(filter.black);
     threshold.setValue(filter.threshold);
     min_value.setValue(filter.min_value);
@@ -58,4 +58,18 @@ class FilterGUI extends GUIPanel
   }
 
   void update_ui() {}
+
+  public void controlEvent(ControlEvent theEvent)
+  {
+    if (theEvent.isController())
+    {
+      Controller c = theEvent.getController();
+      if (c == draw_toggle)
+      {
+        draw = draw_toggle.getValue() > 0.5;
+        return;
+      }
+    }
+    super.controlEvent(theEvent);
+  }
 }
