@@ -128,10 +128,22 @@ class DotsFilter
         }
       }
 
-      // Réduction de probabilité linéaire selon la saturation locale
-      // 0 voisin  → prob inchangée
-      // max_neighbors voisins → prob = 0
-      prob *= 1.0 - (float)neighbor_count / data_filter.max_neighbors;
+      // CORRECTION SPATIALE ADAPTATIVE
+      // Problème de la formule plate : en zone sombre (prob élevé), dès que
+      // max_neighbors voisins sont acceptés, prob → 0, ce qui efface la densité
+      // souhaitée par l'image.
+      //
+      // Solution : le nombre de voisins TOLÉRÉS est proportionnel à prob_image.
+      //   zone noire  (prob=0.85) → expected=2.55 voisins tolérés avant réduction
+      //   zone grise  (prob=0.50) → expected=1.50
+      //   zone claire (prob=0.10) → expected=0.30 → même 1 voisin cause une réduction
+      //
+      // On ne réduit que l'EXCÈS par rapport à cette cible locale :
+      //   excess = max(0, neighbor_count - expected)
+      //   prob  *= max(0, 1 - excess / max_neighbors)
+      float expected = data_filter.max_neighbors * prob; // cible locale
+      float excess   = max(0, neighbor_count - expected);
+      prob *= max(0, 1.0 - excess / data_filter.max_neighbors);
 
       // TIRAGE
       if (random(1.0) < prob)
