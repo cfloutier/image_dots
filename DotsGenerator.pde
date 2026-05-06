@@ -32,7 +32,6 @@ class DotsGenerator
   int     totalCalcMillis  = 0;
   private long _startMillis = 0;
 
-  private int _estimatedMax = 1;
   private ArrayList<PVector> _active;
   private int[]   _grid;
   private int     _cols;
@@ -84,7 +83,6 @@ class DotsGenerator
     java.util.Arrays.fill(_grid, -1);
 
     _active       = new ArrayList<PVector>();
-    _estimatedMax = max(1, (int)(0.7 * ceil(w / _cell) * ceil(h / _cell)));
 
     randomSeed(data.seed);
 
