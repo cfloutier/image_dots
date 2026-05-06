@@ -43,6 +43,7 @@ class DotsGenerator
   private float   _gamma;
   private float   _min_value;  // seuil bas : pixels en dessous = noir
   private float   _max_value;  // seuil haut : pixels au dessus  = blanc
+  private boolean _invert;     // true : zones claires = denses
   private int     _lookRadius; // nb de cellules a inspecter = ceil(r_max / cell)
 
   static final int CANDIDATES = 7; // valeur empirique : bon rapport qualite/perf
@@ -65,6 +66,7 @@ class DotsGenerator
     _gamma         = data.gamma;
     _min_value     = data.min_value;
     _max_value     = max(data.max_value, data.min_value + 1);
+    _invert        = data.invert;
 
     _cell = _r_min / sqrt(2);
     _w    = w;
@@ -197,6 +199,7 @@ class DotsGenerator
     // applique les seuils et normalise dans [0, 1]
     float t_clamped = constrain(pixel, _min_value, _max_value);
     float t_norm    = (t_clamped - _min_value) / (_max_value - _min_value);
+    if (_invert) t_norm = 1.0 - t_norm;
     return _r_min * pow(_r_max / _r_min, pow(t_norm, _gamma));
   }
 

@@ -12,6 +12,7 @@ class DataDots extends GenericData
   // seuils : les pixels hors [min_value, max_value] sont ramenes aux extremes
   float min_value     = 0;    // pixels en dessous : traites comme noir (dense)
   float max_value     = 255;  // pixels au dessus  : traites comme blanc (vide)
+  boolean invert      = false; // inverser : zones claires = denses
 
   int   seed          = 42;
 }
@@ -23,6 +24,7 @@ class DotsGUI extends GUIPanel
   boolean draw = false;
 
   Toggle draw_toggle;
+  Toggle invert_toggle;
   Slider density;
   Slider contrast;
   Slider gamma;
@@ -42,6 +44,7 @@ class DotsGUI extends GUIPanel
     super.Init();
 
     draw_toggle   = addToggle("draw_dots", "Draw");
+    invert_toggle = addToggle("invert",    "Invert");
     nextLine();
     density       = addSlider("density",  "Density",      0.1, 2.0);
     nextLine();
@@ -60,6 +63,7 @@ class DotsGUI extends GUIPanel
   void setGUIValues()
   {
     draw_toggle.setValue(draw);
+    invert_toggle.setValue(dots.invert);
     density.setValue(dots.density);
     contrast.setValue(dots.contrast);
     gamma.setValue(dots.gamma);
