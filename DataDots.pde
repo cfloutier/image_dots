@@ -4,11 +4,9 @@ class DataDots extends GenericData
     super("Dots");
   }
 
-  // Direction B : r_min = espacement zones sombres
-  // r_max est calcule : r_max = r_min * contrast
-  // gamma < 1 : demi-teintes plus denses (plus proches du sombre)
-  // gamma > 1 : demi-teintes plus espacees (plus proches du clair)
-  float r_min         = 2;
+  // Direction B : density = densite de base (zones sombres)
+  // valeur haute = plus de points. r_min interne = 1 / density
+  float density       = 0.5;
   float contrast      = 10;   // ratio r_max / r_min
   float gamma         = 1.0;  // courbe de densite : > 1 = moins de pts en demi-teintes
   // seuils : les pixels hors [min_value, max_value] sont ramenes aux extremes
@@ -25,7 +23,7 @@ class DotsGUI extends GUIPanel
   boolean draw = false;
 
   Toggle draw_toggle;
-  Slider r_min;
+  Slider density;
   Slider contrast;
   Slider gamma;
   Slider min_value;
@@ -45,7 +43,7 @@ class DotsGUI extends GUIPanel
 
     draw_toggle   = addToggle("draw_dots", "Draw");
     nextLine();
-    r_min         = addSlider("r_min",     "r min (dark)", 0.1, 10);
+    density       = addSlider("density",  "Density",      0.1, 2.0);
     nextLine();
     contrast      = addSlider("contrast",  "Contrast",     1.0, 30);
     nextLine();
@@ -62,7 +60,7 @@ class DotsGUI extends GUIPanel
   void setGUIValues()
   {
     draw_toggle.setValue(draw);
-    r_min.setValue(dots.r_min);
+    density.setValue(dots.density);
     contrast.setValue(dots.contrast);
     gamma.setValue(dots.gamma);
     min_value.setValue(dots.min_value);

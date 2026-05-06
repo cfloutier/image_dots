@@ -60,8 +60,8 @@ class DotsGenerator
     progressRatio    = 0;
 
     _image         = image;
-    _r_min         = data.r_min;
-    _r_max         = max(data.r_min * data.contrast, data.r_min);
+    _r_min         = 1.0 / data.density;
+    _r_max         = max(_r_min * data.contrast, _r_min);
     _gamma         = data.gamma;
     _min_value     = data.min_value;
     _max_value     = max(data.max_value, data.min_value + 1);
@@ -84,7 +84,7 @@ class DotsGenerator
 
     randomSeed(data.seed);
 
-    println("DotsGenerator.start() r_min=" + _r_min + " r_max=" + _r_max +
+    println("DotsGenerator.start() density=" + data.density + " r_min=" + _r_min + " r_max=" + _r_max +
             " contrast=" + data.contrast + " gamma=" + _gamma +
             " lookRadius=" + _lookRadius +
             " seed=" + data.seed);
@@ -173,17 +173,20 @@ class DotsGenerator
     }
   }
 
-  // Mapping densite-lineaire :
-  //   density = (1 - t)^gamma   (1 = zone noire dense, 0 = zone blanche vide)
-  //   r_local = r_min / sqrt(density), capé à r_max
+  // Mapping exponentiel en r (log-lineaire) :
   //
-  // Contrairement au mapping lineaire en r, celui-ci est perceptuellement
-  // uniforme : un meme ecart de luminosite donne un meme ecart de densite
-  // apparente. Les zones blanches (density -> 0) tendent naturellement vers
-  // r_max -> aucun point place, sans coupure brutale.
+  //   r_local = r_min * contrast ^ (t_norm ^ gamma)
   //
-  // gamma > 1 : accentue le contraste (moins de pts dans les demi-teintes)
-  // gamma < 1 : aplanie le contraste (plus de pts dans les demi-teintes)
+  // t_norm = 0 (noir)  -> r_min * contrast^0 = r_min          (haute densite)
+  // t_norm = 1 (blanc) -> r_min * contrast^1 = r_min*contrast  (basse densite)
+  //
+  // Avantage sur le mapping lineaire en densite :
+  //   le contraste agit uniformement sur TOUTE la plage de tons.
+  //   A gamma=1 et contrast=5, chaque pas de 20% de luminosite
+  //   multiplie r par la meme valeur. Plus besoin de cap.
+  //
+  // gamma > 1 : courbe concave -> zones claires encore plus espacees
+  // gamma < 1 : courbe convexe -> demi-teintes plus espacees
   //
   // Retourne -1 si le pixel est hors image.
   private float _getRLocal(PVector p)
@@ -194,10 +197,7 @@ class DotsGenerator
     // applique les seuils et normalise dans [0, 1]
     float t_clamped = constrain(pixel, _min_value, _max_value);
     float t_norm    = (t_clamped - _min_value) / (_max_value - _min_value);
-    float density = pow(1.0 - t_norm, _gamma);
-    // cap inferieur de densite = 1/contrast^2 <-> r_local = r_max
-    float min_density = 1.0 / ((_r_max / _r_min) * (_r_max / _r_min));
-    return _r_min / sqrt(max(density, min_density));
+    return _r_min * pow(_r_max / _r_min, pow(t_norm, _gamma));
   }
 
   private void _addPoint(PVector p)
