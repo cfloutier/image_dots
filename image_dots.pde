@@ -6,7 +6,7 @@ import processing.svg.*;
 ImageDotsData data;
 DataGUI dataGui;
 DotsGenerator generator;
-DotsFilter dots_filter;
+DotsRenderer renderer;
 PGraphics current_graphics;
 ControlP5 cp5;
 
@@ -18,7 +18,7 @@ void setup()
   data = new ImageDotsData();
   dataGui = new DataGUI(data);
   generator = new DotsGenerator();
-  dots_filter = new DotsFilter(data.filter);
+  renderer = new DotsRenderer();
 
   setupControls();
 
@@ -42,7 +42,6 @@ void draw()
 
   boolean image_changed  = data.image.changed;
   boolean dots_changed   = data.dots.changed;
-  boolean filter_changed = data.filter.changed;
 
   // toujours réinitialiser (couvre aussi style et page)
   data.reset_all_changes();
@@ -52,39 +51,26 @@ void draw()
 
   // redémarrer le générateur si image ou dots ont changé
   if (image_changed || dots_changed)
-    generator.start(data.dots, iw, ih);
+    generator.start(data.dots, data.image, iw, ih);
 
   // continuer la génération si pas encore terminée
   if (!generator.isComplete)
-  {
-    boolean just_done = generator.resume();
-    if (just_done)
-      dots_filter.buildPoints(generator.points, data.image, data.dots.seed);
-  }
-  else if (filter_changed)
-  {
-    dots_filter.buildPoints(generator.points, data.image, data.dots.seed);
-  }
+    generator.resume();
 
   long t_draw_start = System.currentTimeMillis();
 
   if (_record)
   {
-    // export : toujours Shape uniquement, avec progression console
-    dots_filter.drawWithShape(data.shape, true);
+    // export : Shape uniquement, avec progression console
+    renderer.draw(generator.points, data.shape, true);
   }
   else
   {
     if (dataGui.dots_ui.draw)
       generator.draw();
 
-    if (dataGui.filter_ui.draw || dataGui.shape_ui.draw)
-    {
-      if (dataGui.shape_ui.draw)
-        dots_filter.drawWithShape(data.shape, false);
-      else
-        dots_filter.draw();
-    }
+    if (dataGui.shape_ui.draw)
+      renderer.draw(generator.points, data.shape, false);
   }
 
   end_draw();
@@ -117,8 +103,7 @@ void drawHUD(int drawMillis)
   fill(fg);
   textSize(12);
   int n_generated = generator.points != null ? generator.points.size() : 0;
-  int n_filtered  = dots_filter.points  != null ? dots_filter.points.size()  : 0;
-  String pts_text = StringUtils.formatInt(n_generated) + " pts  →  " + StringUtils.formatInt(n_filtered) + " pts";
+  String pts_text = StringUtils.formatInt(n_generated) + " pts";
   String timer_text = "draw: " + drawMillis + " ms";
   if (!generator.isComplete)
     timer_text = "calc: " + generator.lastResumeMillis + " ms   " + timer_text;

@@ -4,7 +4,12 @@ class DataDots extends GenericData
     super("Dots");
   }
 
-  float minDist       = 12;
+  // Direction B : deux rayons encadrant la densité
+  // r_min → zones sombres (points rapprochés)
+  // r_max → zones claires (points espacés)
+  float r_min         = 2;
+  float r_max         = 20;
+
   int   maxCandidates = 30;
   int   seed          = 42;
 }
@@ -16,7 +21,8 @@ class DotsGUI extends GUIPanel
   boolean draw = false;
 
   Toggle draw_toggle;
-  Slider minDist;
+  Slider r_min;
+  Slider r_max;
   Slider maxCandidates;
   Textlabel seedLabel;
   Button newSeedButton;
@@ -33,7 +39,9 @@ class DotsGUI extends GUIPanel
 
     draw_toggle   = addToggle("draw_dots", "Draw");
     nextLine();
-    minDist       = addSlider("minDist",       "Min Distance",   0.1, 10);
+    r_min         = addSlider("r_min",         "r min (dark)",   0.1, 5);
+    nextLine();
+    r_max         = addSlider("r_max",         "r max (light)",  0.1, 15);
     nextLine();
     maxCandidates = addSlider("maxCandidates", "Max Candidates", 1, 60);
     nextLine();
@@ -44,7 +52,8 @@ class DotsGUI extends GUIPanel
   void setGUIValues()
   {
     draw_toggle.setValue(draw);
-    minDist.setValue(dots.minDist);
+    r_min.setValue(dots.r_min);
+    r_max.setValue(dots.r_max);
     maxCandidates.setValue(dots.maxCandidates);
     seedLabel.setText("Seed: " + dots.seed);
   }

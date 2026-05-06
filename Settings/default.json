@@ -1,16 +1,22 @@
 {
+  "Shape": {
+    "mode": 0,
+    "MODE_POLYGON": 1,
+    "size": 3,
+    "sides": 6,
+    "MODE_POINT": 0
+  },
   "Filter": {
     "min_value": 0,
     "black": true,
     "threshold": 215.90000915527344,
-    "draw": true,
     "gamma": 1,
     "max_value": 209.95001220703125
   },
   "Style": {
     "backgroundColor": -1,
     "lineColor": -13877680,
-    "lineWidth": 3.450000047683716
+    "lineWidth": 2.6500000953674316
   },
   "Page": {
     "clipping": false,
@@ -21,10 +27,10 @@
     "global_scale": 1
   },
   "Dots": {
-    "maxCandidates": 30,
-    "seed": 42,
-    "minDist": 3.559999942779541,
-    "draw": false
+    "r_max": 8.758000373840332,
+    "maxCandidates": 45,
+    "seed": 27953,
+    "r_min": 0.29600003361701965
   },
   "Image": {
     "reset_image": false,
