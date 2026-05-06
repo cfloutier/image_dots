@@ -59,11 +59,11 @@ void draw()
   {
     boolean just_done = generator.resume();
     if (just_done)
-      dots_filter.buildPoints(generator.points, data.image, data.dots.seed);
+      dots_filter.buildPoints(generator.points, data.image, data.dots);
   }
   else if (filter_changed)
   {
-    dots_filter.buildPoints(generator.points, data.image, data.dots.seed);
+    dots_filter.buildPoints(generator.points, data.image, data.dots);
   }
 
   long t_draw_start = System.currentTimeMillis();

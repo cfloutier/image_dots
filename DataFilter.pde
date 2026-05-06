@@ -10,6 +10,10 @@ class DataFilter extends GenericData
   float min_value   = 0;
   float max_value   = 255;
   float gamma       = 1.0;
+
+  // Direction A : filtrage spatialement conscient
+  float influence_radius = 20.0;  // rayon de regard autour d'un point candidat (px)
+  int   max_neighbors    = 3;     // nb de voisins déjà acceptés au-delà duquel prob → 0
 }
 
 
@@ -24,6 +28,8 @@ class FilterGUI extends GUIPanel
   Slider min_value;
   Slider max_value;
   Slider gamma;
+  Slider influence_radius;
+  Slider max_neighbors;
 
   FilterGUI(DataFilter filter)
   {
@@ -44,7 +50,11 @@ class FilterGUI extends GUIPanel
     nextLine();
     max_value = addSlider("max_value", "Max Value", 0, 255);
     nextLine();
-    gamma     = addSlider("gamma",     "Gamma",     0.1, 4.0);
+    gamma             = addSlider("gamma",            "Gamma",           0.1, 4.0);
+    nextLine();
+    influence_radius  = addSlider("influence_radius", "Influence Radius", 1, 100);
+    nextLine();
+    max_neighbors     = addSlider("max_neighbors",    "Max Neighbors",   1, 10);
   }
 
   void setGUIValues()
@@ -55,6 +65,8 @@ class FilterGUI extends GUIPanel
     min_value.setValue(filter.min_value);
     max_value.setValue(filter.max_value);
     gamma.setValue(filter.gamma);
+    influence_radius.setValue(filter.influence_radius);
+    max_neighbors.setValue(filter.max_neighbors);
   }
 
   void update_ui() {}

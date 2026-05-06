@@ -42,7 +42,7 @@ class DotsFilter
   // buildPoints() : construit la liste filtrée à partir des points bruts
   // Appelé après chaque fin de génération, ou quand les paramètres filter changent.
   // -------------------------------------------------------
-  void buildPoints(ArrayList<PVector> source_points, DataImage image, int seed)
+  void buildPoints(ArrayList<PVector> source_points, DataImage image, DataDots dots)
   {
     // Repart d'une liste vide à chaque recalcul
     points.clear();
@@ -52,49 +52,97 @@ class DotsFilter
     if (range <= 0) return;
 
     // Fixe la graine aléatoire pour que le filtrage soit reproductible
-    // (même seed que le générateur → résultat stable pour un paramétrage donné)
-    randomSeed(seed);
+    randomSeed(dots.seed);
 
-    for (PVector p : source_points)
+    // SHUFFLE optionnel : mélange aléatoire pour éviter le biais d'ordre
+    // (sans shuffle, les points du début de liste ont moins de voisins et
+    // sont donc systématiquement favorisés par rapport aux suivants)
+    ArrayList<PVector> ordered = new ArrayList<PVector>(source_points);
+    if (dots.shuffle)
+      java.util.Collections.shuffle(ordered, new java.util.Random(dots.seed));
+
+    // GRILLE SPATIALE des points déjà acceptés
+    // Même principe que dans DotsGenerator : cellule de taille influence_radius,
+    // chaque cellule stocke la liste des points acceptés qu'elle contient.
+    float cell    = data_filter.influence_radius;
+    float img_w   = (image.blurred_image != null) ? image.blurred_image.width  : width;
+    float img_h   = (image.blurred_image != null) ? image.blurred_image.height : height;
+    float ox      = img_w / 2;
+    float oy      = img_h / 2;
+    int   g_cols  = ceil(img_w / cell) + 1;
+    int   g_rows  = ceil(img_h / cell) + 1;
+
+    // Chaque cellule contient une liste d'index vers points[]
+    ArrayList<Integer>[] grid = new ArrayList[g_cols * g_rows];
+    for (int i = 0; i < grid.length; i++)
+      grid[i] = new ArrayList<Integer>();
+
+    for (PVector p : ordered)
     {
-      // Récupère la valeur de luminosité du pixel sous le point p [0..255]
-      // Retourne -1 si le point est en dehors des limites de l'image
+      // Valeur de luminosité du pixel sous le point p [0..255]
       float value = image.getPixelValue(p);
-
-      // Point hors image : on l'ignore systématiquement
       if (value == -1) continue;
 
-      // ÉTAPE 1 — CLAMP : ignore les pixels trop clairs ou trop sombres.
-      // Permet de ne travailler que sur une plage de tonalités choisie.
-      // Ex: min_value=50, max_value=200 → les noirs purs et blancs purs sont ignorés.
+      // ÉTAPE 1 — CLAMP
       value = constrain(value, data_filter.min_value, data_filter.max_value);
 
-      // ÉTAPE 2 — NORMALISATION : ramène la valeur dans [0, 1].
-      // 0 = la valeur la plus sombre de la plage, 1 = la plus claire.
+      // ÉTAPE 2 — NORMALISATION [0, 1]
       float normalized = (value - data_filter.min_value) / range;
 
-      // ÉTAPE 3 — CORRECTION GAMMA : applique une courbe de puissance.
-      // gamma < 1 : compresse les hautes valeurs → plus de points dans les zones claires
-      // gamma > 1 : compresse les basses valeurs → plus de points dans les zones sombres
-      // gamma = 1 : aucune correction, relation linéaire
+      // ÉTAPE 3 — GAMMA
       normalized = pow(normalized, data_filter.gamma);
 
-      // ÉTAPE 4 — MODE : détermine si les zones sombres ou claires génèrent des points.
-      // black=true  → prob haute pour normalized proche de 0 (zones sombres)
-      // black=false → prob haute pour normalized proche de 1 (zones claires)
+      // ÉTAPE 4 — MODE noir/blanc
       float prob = data_filter.black ? (1.0 - normalized) : normalized;
 
-      // ÉTAPE 5 — DENSITÉ GLOBALE : threshold [0..255] agit comme un multiplicateur.
-      // threshold=255 → prob inchangée (densité maximale)
-      // threshold=128 → moitié des points conservés en moyenne
-      // threshold=0   → aucun point conservé
+      // ÉTAPE 5 — DENSITÉ GLOBALE
       prob *= data_filter.threshold / 255.0;
 
-      // TIRAGE ALÉATOIRE : conserve le point avec la probabilité calculée.
-      // random(1.0) retourne une valeur dans [0, 1[ de façon uniforme.
-      // En moyenne, une proportion "prob" des points sera conservée.
+      // ÉTAPE 6 — CORRECTION SPATIALE (Direction A)
+      // Compte les points déjà acceptés dans le rayon influence_radius
+      int cgx = (int)((p.x + ox) / cell);
+      int cgy = (int)((p.y + oy) / cell);
+
+      int neighbor_count = 0;
+      float r2 = data_filter.influence_radius * data_filter.influence_radius;
+
+      // Inspecte les cellules voisines (voisinage 3x3 suffit car cell = influence_radius)
+      for (int dy = -1; dy <= 1 && neighbor_count < data_filter.max_neighbors; dy++)
+      {
+        for (int dx = -1; dx <= 1 && neighbor_count < data_filter.max_neighbors; dx++)
+        {
+          int nx = cgx + dx;
+          int ny = cgy + dy;
+          if (nx < 0 || nx >= g_cols || ny < 0 || ny >= g_rows) continue;
+          for (int idx : grid[nx + ny * g_cols])
+          {
+            PVector q = points.get(idx);
+            float ddx = p.x - q.x;
+            float ddy = p.y - q.y;
+            if (ddx*ddx + ddy*ddy < r2)
+            {
+              neighbor_count++;
+              if (neighbor_count >= data_filter.max_neighbors) break;
+            }
+          }
+        }
+      }
+
+      // Réduction de probabilité linéaire selon la saturation locale
+      // 0 voisin  → prob inchangée
+      // max_neighbors voisins → prob = 0
+      prob *= 1.0 - (float)neighbor_count / data_filter.max_neighbors;
+
+      // TIRAGE
       if (random(1.0) < prob)
+      {
+        // Enregistre le point et le place dans la grille spatiale
+        int new_idx = points.size();
         points.add(p);
+        int gx = constrain((int)((p.x + ox) / cell), 0, g_cols - 1);
+        int gy = constrain((int)((p.y + oy) / cell), 0, g_rows - 1);
+        grid[gx + gy * g_cols].add(new_idx);
+      }
     }
 
     println("DotsFilter: " + points.size() + " / " + source_points.size() + " points kept");
