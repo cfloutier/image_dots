@@ -82,30 +82,19 @@ void draw()
 void drawHUD(int drawMillis)
 {
   int bar_x = 20;
-  int bar_y = height - 30;
-  int bar_w = 300;
-  int bar_h = 16;
+  int bar_y = height - 10;
 
   color bg = data.style.backgroundColor.col;
   color fg = color(255 - red(bg), 255 - green(bg), 255 - blue(bg));
 
-  // barre de progression (visible uniquement pendant la génération)
-  if (!generator.isComplete)
-  {
-    noStroke();
-    fill(red(bg)*0.6, green(bg)*0.6, blue(bg)*0.6);
-    rect(bar_x, bar_y, bar_w, bar_h);
-    fill(0, 200, 100);
-    rect(bar_x, bar_y, bar_w * generator.progressRatio, bar_h);
-  }
-
-  // timer + nb points toujours affichés
   fill(fg);
   textSize(12);
   int n_generated = generator.points != null ? generator.points.size() : 0;
   String pts_text = StringUtils.formatInt(n_generated) + " pts";
-  String timer_text = "draw: " + drawMillis + " ms";
+  String timer_text;
   if (!generator.isComplete)
-    timer_text = "calc: " + generator.lastResumeMillis + " ms   " + timer_text;
-  text(pts_text + "      " + timer_text, bar_x, bar_y - 5);
+    timer_text = "calc: " + StringUtils.formatDuration(generator.totalCalcMillis) + "   draw: " + StringUtils.formatDuration(drawMillis);
+  else
+    timer_text = "total calc: " + StringUtils.formatDuration(generator.totalCalcMillis) + "   draw: " + StringUtils.formatDuration(drawMillis);
+  text(pts_text + "      " + timer_text, bar_x, bar_y);
 }

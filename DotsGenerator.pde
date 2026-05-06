@@ -29,7 +29,8 @@ class DotsGenerator
   ArrayList<PVector> points = new ArrayList<PVector>();
   boolean isComplete = true;
   int     lastResumeMillis = 0;
-  float   progressRatio    = 0;
+  int     totalCalcMillis  = 0;
+  private long _startMillis = 0;
 
   private int _estimatedMax = 1;
   private ArrayList<PVector> _active;
@@ -58,7 +59,8 @@ class DotsGenerator
     points.clear();
     isComplete       = false;
     lastResumeMillis = 0;
-    progressRatio    = 0;
+    totalCalcMillis  = 0;
+    _startMillis     = System.currentTimeMillis();
 
     _image         = image;
     _r_min         = 1.0 / data.density;
@@ -107,8 +109,8 @@ class DotsGenerator
     {
       if (System.currentTimeMillis() >= deadline)
       {
-        lastResumeMillis = (int)(System.currentTimeMillis() - t0);
-        progressRatio    = min(1.0, (float)points.size() / _estimatedMax);
+        lastResumeMillis  = (int)(System.currentTimeMillis() - t0);
+        totalCalcMillis   = (int)(System.currentTimeMillis() - _startMillis);
         return false;
       }
 
@@ -163,7 +165,7 @@ class DotsGenerator
 
     isComplete       = true;
     lastResumeMillis = (int)(System.currentTimeMillis() - t0);
-    progressRatio    = 1.0;
+    totalCalcMillis  = (int)(System.currentTimeMillis() - _startMillis);
     println("DotsGenerator: " + points.size() + " points generated");
     return true;
   }
