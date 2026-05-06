@@ -10,9 +10,11 @@ class DataDots extends GenericData
   // gamma > 1 : demi-teintes plus espacees (plus proches du clair)
   float r_min         = 2;
   float contrast      = 10;   // ratio r_max / r_min
-  float gamma         = 1.0;  // courbe de reponse
+  float gamma         = 1.0;  // courbe de densite : > 1 = moins de pts en demi-teintes
+  // seuils : les pixels hors [min_value, max_value] sont ramenes aux extremes
+  float min_value     = 0;    // pixels en dessous : traites comme noir (dense)
+  float max_value     = 255;  // pixels au dessus  : traites comme blanc (vide)
 
-  int   maxCandidates = 30;
   int   seed          = 42;
 }
 
@@ -26,7 +28,8 @@ class DotsGUI extends GUIPanel
   Slider r_min;
   Slider contrast;
   Slider gamma;
-  Slider maxCandidates;
+  Slider min_value;
+  Slider max_value;
   Textlabel seedLabel;
   Button newSeedButton;
 
@@ -42,13 +45,15 @@ class DotsGUI extends GUIPanel
 
     draw_toggle   = addToggle("draw_dots", "Draw");
     nextLine();
-    r_min         = addSlider("r_min",         "r min (dark)",   0.1, 10);
+    r_min         = addSlider("r_min",     "r min (dark)", 0.1, 10);
     nextLine();
-    contrast      = addSlider("contrast",      "Contrast",       1.0, 30);
+    contrast      = addSlider("contrast",  "Contrast",     1.0, 30);
     nextLine();
-    gamma         = addSlider("gamma",         "Gamma",          0.2, 3.0);
+    gamma         = addSlider("gamma",     "Gamma",        0.3, 4.0);
     nextLine();
-    maxCandidates = addSlider("maxCandidates", "Max Candidates", 1, 60);
+    min_value     = addSlider("min_value", "Min Value",    0, 255);
+    nextLine();
+    max_value     = addSlider("max_value", "Max Value",    0, 255);
     nextLine();
     seedLabel     = inlineLabel("Seed: " + dots.seed, 160);
     newSeedButton = addButton("New Seed");
@@ -60,7 +65,8 @@ class DotsGUI extends GUIPanel
     r_min.setValue(dots.r_min);
     contrast.setValue(dots.contrast);
     gamma.setValue(dots.gamma);
-    maxCandidates.setValue(dots.maxCandidates);
+    min_value.setValue(dots.min_value);
+    max_value.setValue(dots.max_value);
     seedLabel.setText("Seed: " + dots.seed);
   }
 

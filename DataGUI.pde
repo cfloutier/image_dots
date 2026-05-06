@@ -7,7 +7,6 @@ class DataGUI extends MainPanel
   ImageGUI images_ui;
   StyleGUI style_ui;
   DotsGUI dots_ui;
-  FilterGUI filter_ui;
   ShapeGUI shape_ui;
 
   public DataGUI(ImageDotsData data)
@@ -17,7 +16,6 @@ class DataGUI extends MainPanel
     images_ui = new ImageGUI(data.image);
     style_ui = new StyleGUI(data.style);
     dots_ui = new DotsGUI(data.dots);
-    filter_ui = new FilterGUI(data.filter);
     shape_ui = new ShapeGUI(data.shape);
   }
 
@@ -27,7 +25,6 @@ class DataGUI extends MainPanel
     addTab(images_ui);
     addTab(style_ui);
     addTab(dots_ui);
-    addTab(filter_ui);
     addTab(shape_ui);
 
     super.Init();

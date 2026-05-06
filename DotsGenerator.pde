@@ -41,8 +41,11 @@ class DotsGenerator
   private float   _r_min;
   private float   _r_max;
   private float   _gamma;
+  private float   _min_value;  // seuil bas : pixels en dessous = noir
+  private float   _max_value;  // seuil haut : pixels au dessus  = blanc
   private int     _lookRadius; // nb de cellules a inspecter = ceil(r_max / cell)
-  private int     _maxCandidates;
+
+  static final int CANDIDATES = 7; // valeur empirique : bon rapport qualite/perf
 
   // Reference a l'image pour lire les pixels pendant la generation
   private DataImage _image;
@@ -60,7 +63,8 @@ class DotsGenerator
     _r_min         = data.r_min;
     _r_max         = max(data.r_min * data.contrast, data.r_min);
     _gamma         = data.gamma;
-    _maxCandidates = data.maxCandidates;
+    _min_value     = data.min_value;
+    _max_value     = max(data.max_value, data.min_value + 1);
 
     _cell = _r_min / sqrt(2);
     _w    = w;
@@ -82,7 +86,7 @@ class DotsGenerator
 
     println("DotsGenerator.start() r_min=" + _r_min + " r_max=" + _r_max +
             " contrast=" + data.contrast + " gamma=" + _gamma +
-            " maxCandidates=" + _maxCandidates + " lookRadius=" + _lookRadius +
+            " lookRadius=" + _lookRadius +
             " seed=" + data.seed);
 
     PVector first = new PVector(random(-w/2, w/2), random(-h/2, h/2));
@@ -110,7 +114,7 @@ class DotsGenerator
       PVector p = _active.get(idx);
       boolean found = false;
 
-      for (int n = 0; n < _maxCandidates; n++)
+      for (int n = 0; n < CANDIDATES; n++)
       {
         float angle = random(TWO_PI);
         float d     = random(_r_min, 2 * _r_max);
@@ -122,6 +126,7 @@ class DotsGenerator
             candidate.y < -_h/2 || candidate.y > _h/2) continue;
 
         float r_local = _getRLocal(candidate);
+        if (r_local < 0) continue; // hors image
 
         int cgx = (int)((candidate.x + _ox) / _cell);
         int cgy = (int)((candidate.y + _oy) / _cell);
@@ -168,16 +173,31 @@ class DotsGenerator
     }
   }
 
-  // pixel = 0 (noir)  → r_local = r_min → haute densite
-  // pixel = 255 (blanc) → r_local = r_max → faible densite
-  // gamma courbe la reponse : < 1 = plus de points en demi-teintes
+  // Mapping densite-lineaire :
+  //   density = (1 - t)^gamma   (1 = zone noire dense, 0 = zone blanche vide)
+  //   r_local = r_min / sqrt(density), capé à r_max
+  //
+  // Contrairement au mapping lineaire en r, celui-ci est perceptuellement
+  // uniforme : un meme ecart de luminosite donne un meme ecart de densite
+  // apparente. Les zones blanches (density -> 0) tendent naturellement vers
+  // r_max -> aucun point place, sans coupure brutale.
+  //
+  // gamma > 1 : accentue le contraste (moins de pts dans les demi-teintes)
+  // gamma < 1 : aplanie le contraste (plus de pts dans les demi-teintes)
+  //
+  // Retourne -1 si le pixel est hors image.
   private float _getRLocal(PVector p)
   {
     float pixel = _image.getPixelValue(p);
     if (pixel == -1 || _image.blurred_image == null)
-      return _r_max;
-    float t = pow(pixel / 255.0, _gamma);
-    return _r_min + (_r_max - _r_min) * t;
+      return -1;
+    // applique les seuils et normalise dans [0, 1]
+    float t_clamped = constrain(pixel, _min_value, _max_value);
+    float t_norm    = (t_clamped - _min_value) / (_max_value - _min_value);
+    float density = pow(1.0 - t_norm, _gamma);
+    // cap inferieur de densite = 1/contrast^2 <-> r_local = r_max
+    float min_density = 1.0 / ((_r_max / _r_min) * (_r_max / _r_min));
+    return _r_min / sqrt(max(density, min_density));
   }
 
   private void _addPoint(PVector p)
