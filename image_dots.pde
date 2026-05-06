@@ -38,7 +38,7 @@ void draw()
   start_draw();
 
   data.image.buildBlurredImage();
-  data.image.draw();
+  data.image.draw(dataGui.images_ui.imageAlpha);
 
   boolean image_changed  = data.image.changed;
   boolean dots_changed   = data.dots.changed;

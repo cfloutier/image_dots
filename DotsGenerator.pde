@@ -89,7 +89,7 @@ class DotsGenerator
             " lookRadius=" + _lookRadius +
             " seed=" + data.seed);
 
-    PVector first = new PVector(random(-w/2, w/2), random(-h/2, h/2));
+    PVector first = new PVector(0, 0);
     _addPoint(first);
     _active.add(first);
   }
