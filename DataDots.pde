@@ -4,11 +4,13 @@ class DataDots extends GenericData
     super("Dots");
   }
 
-  // Direction B : deux rayons encadrant la densité
-  // r_min → zones sombres (points rapprochés)
-  // r_max → zones claires (points espacés)
+  // Direction B : r_min = espacement zones sombres
+  // r_max est calcule : r_max = r_min * contrast
+  // gamma < 1 : demi-teintes plus denses (plus proches du sombre)
+  // gamma > 1 : demi-teintes plus espacees (plus proches du clair)
   float r_min         = 2;
-  float r_max         = 20;
+  float contrast      = 10;   // ratio r_max / r_min
+  float gamma         = 1.0;  // courbe de reponse
 
   int   maxCandidates = 30;
   int   seed          = 42;
@@ -22,7 +24,8 @@ class DotsGUI extends GUIPanel
 
   Toggle draw_toggle;
   Slider r_min;
-  Slider r_max;
+  Slider contrast;
+  Slider gamma;
   Slider maxCandidates;
   Textlabel seedLabel;
   Button newSeedButton;
@@ -39,9 +42,11 @@ class DotsGUI extends GUIPanel
 
     draw_toggle   = addToggle("draw_dots", "Draw");
     nextLine();
-    r_min         = addSlider("r_min",         "r min (dark)",   0.1, 5);
+    r_min         = addSlider("r_min",         "r min (dark)",   0.1, 10);
     nextLine();
-    r_max         = addSlider("r_max",         "r max (light)",  0.1, 15);
+    contrast      = addSlider("contrast",      "Contrast",       1.0, 30);
+    nextLine();
+    gamma         = addSlider("gamma",         "Gamma",          0.2, 3.0);
     nextLine();
     maxCandidates = addSlider("maxCandidates", "Max Candidates", 1, 60);
     nextLine();
@@ -53,7 +58,8 @@ class DotsGUI extends GUIPanel
   {
     draw_toggle.setValue(draw);
     r_min.setValue(dots.r_min);
-    r_max.setValue(dots.r_max);
+    contrast.setValue(dots.contrast);
+    gamma.setValue(dots.gamma);
     maxCandidates.setValue(dots.maxCandidates);
     seedLabel.setText("Seed: " + dots.seed);
   }

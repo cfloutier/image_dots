@@ -5,14 +5,13 @@
 //   Au lieu d'une distance minimale fixe r, on calcule un r_local pour
 //   chaque candidat à partir de la valeur du pixel sous sa position :
 //
-//     r_local = r_min + (r_max - r_min) × (pixel / 255)
+//     r_local = r_min + (r_max - r_min) × pow(pixel/255, gamma)
 //
-//   zone sombre (pixel≈0) → r_local ≈ r_min → points rapprochés
-//   zone claire (pixel≈255) → r_local ≈ r_max → points espacés
+//   gamma = 1  → reponse lineaire (defaut)
+//   gamma < 1  → demi-teintes plus denses (proches du sombre)
+//   gamma > 1  → demi-teintes plus espacees (proches du clair)
 //
-//   La distribution blue noise est maintenue à toutes les échelles :
-//   la propriété "pas de points plus proches que r_local" est respectée
-//   directement pendant la génération, sans post-filtrage.
+//   r_max = r_min × contrast
 //
 // GRILLE SPATIALE :
 //   On utilise r_min/√2 comme taille de cellule (le plus petit r possible).
@@ -41,6 +40,7 @@ class DotsGenerator
   private float   _w, _h;
   private float   _r_min;
   private float   _r_max;
+  private float   _gamma;
   private int     _lookRadius; // nb de cellules a inspecter = ceil(r_max / cell)
   private int     _maxCandidates;
 
@@ -58,7 +58,8 @@ class DotsGenerator
 
     _image         = image;
     _r_min         = data.r_min;
-    _r_max         = max(data.r_max, data.r_min);
+    _r_max         = max(data.r_min * data.contrast, data.r_min);
+    _gamma         = data.gamma;
     _maxCandidates = data.maxCandidates;
 
     _cell = _r_min / sqrt(2);
@@ -80,6 +81,7 @@ class DotsGenerator
     randomSeed(data.seed);
 
     println("DotsGenerator.start() r_min=" + _r_min + " r_max=" + _r_max +
+            " contrast=" + data.contrast + " gamma=" + _gamma +
             " maxCandidates=" + _maxCandidates + " lookRadius=" + _lookRadius +
             " seed=" + data.seed);
 
@@ -166,14 +168,15 @@ class DotsGenerator
     }
   }
 
-  // pixel = 0 (noir) → r_local = r_min → haute densite
+  // pixel = 0 (noir)  → r_local = r_min → haute densite
   // pixel = 255 (blanc) → r_local = r_max → faible densite
+  // gamma courbe la reponse : < 1 = plus de points en demi-teintes
   private float _getRLocal(PVector p)
   {
     float pixel = _image.getPixelValue(p);
     if (pixel == -1 || _image.blurred_image == null)
       return _r_max;
-    float t = pixel / 255.0;
+    float t = pow(pixel / 255.0, _gamma);
     return _r_min + (_r_max - _r_min) * t;
   }
 
