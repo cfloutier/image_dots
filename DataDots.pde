@@ -7,6 +7,7 @@ class DataDots extends GenericData
   float minDist       = 12;
   int   maxCandidates = 30;
   int   seed          = 42;
+  boolean shuffle     = true;  // mélange aléatoire des points avant filtrage
 }
 
 
@@ -16,6 +17,7 @@ class DotsGUI extends GUIPanel
   boolean draw = false;
 
   Toggle draw_toggle;
+  Toggle shuffle_toggle;
   Slider minDist;
   Slider maxCandidates;
   Textlabel seedLabel;
@@ -31,9 +33,11 @@ class DotsGUI extends GUIPanel
   {
     super.Init();
 
-    draw_toggle   = addToggle("draw_dots", "Draw");
+    draw_toggle    = addToggle("draw_dots", "Draw");
     nextLine();
-    minDist       = addSlider("minDist",       "Min Distance",   0.1, 10);
+    shuffle_toggle = addToggle("shuffle", "Shuffle points", dots);
+    nextLine();
+    minDist        = addSlider("minDist",       "Min Distance",   0.1, 10);
     nextLine();
     maxCandidates = addSlider("maxCandidates", "Max Candidates", 1, 60);
     nextLine();
@@ -44,6 +48,7 @@ class DotsGUI extends GUIPanel
   void setGUIValues()
   {
     draw_toggle.setValue(draw);
+    shuffle_toggle.setValue(dots.shuffle);
     minDist.setValue(dots.minDist);
     maxCandidates.setValue(dots.maxCandidates);
     seedLabel.setText("Seed: " + dots.seed);
