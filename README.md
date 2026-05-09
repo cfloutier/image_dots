@@ -91,4 +91,41 @@ Le générateur redémarre automatiquement dès qu'un paramètre image ou dots c
 - Un ratio `contrast` de **5 à 15** donne des résultats équilibrés. Au-delà de 20 les zones claires deviennent quasi-vides.
 - `gamma > 1` (ex : 2–3) protège les demi-teintes et évite une transition trop abrupte entre sombre et clair.
 - `min_value` / `max_value` permettent de cropper la plage tonale de l'image sans retouche externe.
+- `threshold` à 240–250 suffit à purger les points résiduels dans les zones quasi-blanches sans perturber les demi-teintes.
 - En mode **Polygon**, `sides = 3` donne des triangles, `sides = 6` des hexagones — bien adapté aux traceurs.
+
+---
+
+## Changelog
+
+### 2026-05-09
+- **Threshold (seuil dur)** : ajout du paramètre `threshold` dans `DataDots` et du slider correspondant. Tout candidat dont le pixel dépasse le seuil est rejeté immédiatement dans `_getRLocal`, avant le calcul de `r_local`. Nettoie les quelques points résiduels qui apparaissent dans les zones totalement blanches malgré un `contrast` élevé.
+
+### 2026-05-07 — branche `test/density_pause` (→ main)
+- **README** : réécriture complète pour refléter l'état réel du code (formule log-linéaire, architecture, paramètres exacts, conseils).
+- **Fix** : suppression d'une valeur statique résiduelle dans `DataDots`.
+- **HUD progressif** : affichage du nombre de points et du temps de calcul en temps réel pendant la génération (`totalCalcMillis`, `lastResumeMillis`). Ajout de `StringUtils.formatDuration()` et `StringUtils.formatInt()`.
+
+### 2026-05-06 — branche `test/density_pause`
+- **Poisson à densité variable (Direction B)** : refonte complète du `DotsGenerator`. On ne filtre plus une distribution uniforme — on génère directement la distribution finale en calculant un `r_local` pour chaque candidat à partir de la luminosité du pixel sous sa position.
+- **Mapping log-linéaire** : `r_local = r_min × contrast ^ (t_norm ^ gamma)`. Remplace le mapping linéaire prévu initialement — chaque pas de luminosité multiplie `r` par le même facteur sur toute la plage de tons.
+- **Paramètre `density`** : remplace `r_min` en entrée GUI (`r_min = 1 / density`), plus intuitif.
+- **Paramètre `contrast`** : ratio `r_max / r_min`, remplace un `r_max` absolu.
+- **Paramètres `min_value` / `max_value`** : clamp de la plage tonale avant normalisation — permettent de cibler une sous-plage de l'histogramme.
+- **Paramètre `invert`** : inverse `t_norm` pour que les zones claires soient denses.
+- **Suppression de `DotsFilter`** : le filtre de post-traitement et `DataFilter` sont supprimés — inutiles avec la génération directe.
+- **`DotsRenderer`** : extraction du rendu dans une classe dédiée, séparé du générateur. Supporte le mode `Point` et le mode `Polygon` (polygone régulier centré sur chaque point).
+- **`DataShape`** : nouveaux paramètres `mode`, `sides`, `size` pour le rendu, avec onglet GUI dédié.
+- **Grille spatiale adaptée** : cellule = `r_min / √2`, rayon d'inspection = `ceil(r_max / cell) + 1` pour couvrir tous les voisins même quand `r_max >> r_min`.
+
+### 2026-05-04 — branche `main`
+- **Génération progressive** (`resume()`) : la génération Poisson s'effectue en tranches de 500 ms pour ne pas bloquer l'interface.
+- **`DataShape` + `DotsRenderer`** (v1) : premier ajout du rendu en polygones réguliers.
+- **Commentaires** : documentation de `DotsGenerator` et `DotsFilter`.
+
+### 2026-05-02 — branche `main`
+- **Premiers fichiers** : setup Processing, centrage de l'image, export PDF/SVG/DXF.
+- **Grille de points** : première implémentation du Poisson Disk Sampling uniforme avec grille spatiale.
+- **Densité uniforme** : paramètre `density` basique.
+- **Seed** : paramètre `seed` pour la reproductibilité.
+- **Filtre binaire** (`DotsFilter`) : premier filtre de post-traitement — suppression des points au-dessus d'un seuil de luminosité.

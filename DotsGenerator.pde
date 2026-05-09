@@ -44,6 +44,7 @@ class DotsGenerator
   private float   _min_value;  // seuil bas : pixels en dessous = noir
   private float   _max_value;  // seuil haut : pixels au dessus  = blanc
   private boolean _invert;     // true : zones claires = denses
+  private float   _threshold;  // seuil dur : pixels au dessus = rejet immediat
   private int     _lookRadius; // nb de cellules a inspecter = ceil(r_max / cell)
 
   static final int CANDIDATES = 7; // valeur empirique : bon rapport qualite/perf
@@ -68,6 +69,7 @@ class DotsGenerator
     _min_value     = data.min_value;
     _max_value     = max(data.max_value, data.min_value + 1);
     _invert        = data.invert;
+    _threshold     = data.threshold;
 
     _cell = _r_min / sqrt(2);
     _w    = w;
@@ -195,6 +197,9 @@ class DotsGenerator
   {
     float pixel = _image.getPixelValue(p);
     if (pixel == -1 || _image.blurred_image == null)
+      return -1;
+    // seuil dur : rejet immediat si pixel trop clair
+    if (pixel > _threshold)
       return -1;
     // applique les seuils et normalise dans [0, 1]
     float t_clamped = constrain(pixel, _min_value, _max_value);

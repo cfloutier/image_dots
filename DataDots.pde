@@ -13,6 +13,7 @@ class DataDots extends GenericData
   float min_value     = 0;    // pixels en dessous : traites comme noir (dense)
   float max_value     = 255;  // pixels au dessus  : traites comme blanc (vide)
   boolean invert      = false; // inverser : zones claires = denses
+  float threshold     = 255;  // seuil dur : pixels au dessus = aucun point place
 
   int   seed          = 42;
 }
@@ -30,6 +31,7 @@ class DotsGUI extends GUIPanel
   Slider gamma;
   Slider min_value;
   Slider max_value;
+  Slider threshold;
   Textlabel seedLabel;
   Button newSeedButton;
 
@@ -56,6 +58,8 @@ class DotsGUI extends GUIPanel
     nextLine();
     max_value     = addSlider("max_value", "Max Value",    0, 255);
     nextLine();
+    threshold     = addSlider("threshold", "Threshold",    0, 255);
+    nextLine();
     seedLabel     = inlineLabel("Seed: " + dots.seed, 160);
     newSeedButton = addButton("New Seed");
   }
@@ -69,6 +73,7 @@ class DotsGUI extends GUIPanel
     gamma.setValue(dots.gamma);
     min_value.setValue(dots.min_value);
     max_value.setValue(dots.max_value);
+    threshold.setValue(dots.threshold);
     seedLabel.setText("Seed: " + dots.seed);
   }
 
