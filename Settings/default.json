@@ -1,16 +1,15 @@
 {
-  "Filter": {
-    "min_value": 0,
-    "black": true,
-    "threshold": 215.90000915527344,
-    "draw": true,
-    "gamma": 1,
-    "max_value": 209.95001220703125
+  "Shape": {
+    "mode": 0,
+    "MODE_POLYGON": 1,
+    "size": 0.10000000149011612,
+    "sides": 12,
+    "MODE_POINT": 0
   },
   "Style": {
     "backgroundColor": -1,
     "lineColor": -13877680,
-    "lineWidth": 3.450000047683716
+    "lineWidth": 3.316666841506958
   },
   "Page": {
     "clipping": false,
@@ -21,15 +20,16 @@
     "global_scale": 1
   },
   "Dots": {
-    "maxCandidates": 30,
-    "seed": 42,
-    "minDist": 3.559999942779541,
-    "draw": false
+    "min_value": 22.100000381469727,
+    "density": 0.5876666307449341,
+    "seed": 82451,
+    "contrast": 14.14666748046875,
+    "gamma": 1.9773333072662354,
+    "max_value": 196.35000610351562
   },
   "Image": {
     "reset_image": false,
     "Blur": 1,
-    "ImageAlpha": 0,
     "Width": 776,
     "Contrast": 0,
     "source_file": "eye2.png"

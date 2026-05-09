@@ -1,248 +1,175 @@
 // ============================================================
-// DotsGenerator — Poisson Disk Sampling (algorithme de Bridson, 2007)
+// DotsGenerator — Poisson Disk Sampling à densité variable (Direction B)
 //
-// PRINCIPE GÉNÉRAL :
-//   On veut placer des points aléatoires tels qu'aucun point n'est
-//   plus proche d'un autre que la distance minimale _r (minDist).
-//   C'est ce qu'on appelle le "blue noise" : une distribution
-//   visuellement uniforme, sans agglomérats ni zones vides.
+// DIFFÉRENCE AVEC LA VERSION UNIFORME :
+//   Au lieu d'une distance minimale fixe r, on calcule un r_local pour
+//   chaque candidat à partir de la valeur du pixel sous sa position :
 //
-// ALGORITHME EN 3 ÉTAPES :
-//   1. Placer un premier point aléatoire, l'ajouter à la liste "active"
-//   2. Tant qu'il reste des points actifs :
-//      a. Prendre un point actif au hasard
-//      b. Essayer jusqu'à maxCandidates positions dans l'anneau [r, 2r]
-//      c. Si un candidat est valide (distance > r de tous ses voisins),
-//         l'accepter et l'ajouter aux actifs
-//      d. Si aucun candidat n'est valide, retirer ce point des actifs
-//   3. Quand la liste active est vide → grille entièrement remplie
+//     r_local = r_min + (r_max - r_min) × pow(pixel/255, gamma)
 //
-// OPTIMISATION CLÉ — LA GRILLE SPATIALE :
-//   Vérifier la distance à TOUS les points existants serait O(n²).
-//   On divise l'espace en cellules de taille r/√2 : dans une telle
-//   cellule, il ne peut tenir qu'un seul point (car sa diagonale = r).
-//   Pour valider un candidat, on ne regarde que les cellules dans un
-//   voisinage 5×5 autour de lui → O(1) par test.
+//   gamma = 1  → reponse lineaire (defaut)
+//   gamma < 1  → demi-teintes plus denses (proches du sombre)
+//   gamma > 1  → demi-teintes plus espacees (proches du clair)
 //
-// GÉNÉRATION PROGRESSIVE :
-//   Pour ne pas bloquer l'interface, on découpe le travail en tranches
-//   de MAX_MILLIS ms via start() + resume() appelé à chaque frame.
+//   r_max = r_min × contrast
+//
+// GRILLE SPATIALE :
+//   On utilise r_min/√2 comme taille de cellule (le plus petit r possible).
+//   Cela garantit qu'une cellule contient au plus 1 point.
+//   Le voisinage à inspecter est plus large que dans la version uniforme :
+//   on regarde jusqu'à ceil(r_max / cell) cellules dans chaque direction.
+//
+// ANNEAU DE GÉNÉRATION :
+//   Les candidats sont tirés dans l'anneau [r_min, 2×r_max] autour du
+//   point actif, puis validés avec leur r_local propre.
 // ============================================================
 
 class DotsGenerator
 {
-  // Liste finale de tous les points acceptés (coordonnées centrées sur l'origine)
   ArrayList<PVector> points = new ArrayList<PVector>();
-
-  // Vrai dès que la liste active est vide (génération terminée)
   boolean isComplete = true;
+  int     lastResumeMillis = 0;
+  int     totalCalcMillis  = 0;
+  private long _startMillis = 0;
 
-  // Durée du dernier appel à resume() en millisecondes (affiché dans le HUD)
-  int lastResumeMillis = 0;
-
-  // Ratio d'avancement [0..1] estimé à partir du nb de points vs maximum théorique
-  float progressRatio = 0;
-
-  // Nombre maximum de points estimé pour calculer la progression
-  // (utilisé seulement comme dénominateur de progressRatio)
-  private int _estimatedMax = 1;
-
-  // Liste des points "actifs" : ceux depuis lesquels on tente encore de générer des voisins.
-  // Un point reste actif tant qu'un candidat valide peut en être issu.
-  // Il est retiré dès que tous ses maxCandidates tentatives ont échoué.
   private ArrayList<PVector> _active;
+  private int[]   _grid;
+  private int     _cols;
+  private float   _cell;       // = r_min / sqrt(2)
+  private float   _ox, _oy;
+  private float   _w, _h;
+  private float   _r_min;
+  private float   _r_max;
+  private float   _gamma;
+  private float   _min_value;  // seuil bas : pixels en dessous = noir
+  private float   _max_value;  // seuil haut : pixels au dessus  = blanc
+  private boolean _invert;     // true : zones claires = denses
+  private float   _threshold;  // seuil dur : pixels au dessus = rejet immediat
+  private int     _lookRadius; // nb de cellules a inspecter = ceil(r_max / cell)
 
-  // Grille spatiale plate (tableau 1D, indexé par gx + gy * _cols).
-  // Chaque cellule contient l'index du point qui l'occupe, ou -1 si vide.
-  private int[] _grid;
+  static final int CANDIDATES = 7; // valeur empirique : bon rapport qualite/perf
 
-  // Nombre de colonnes de la grille (largeur / taille de cellule)
-  private int _cols;
+  // Reference a l'image pour lire les pixels pendant la generation
+  private DataImage _image;
 
-  // Taille d'une cellule = r / √2
-  // Choisie pour qu'une cellule ne contienne jamais plus d'un point :
-  // la diagonale d'une cellule carrée de côté (r/√2) vaut exactement r.
-  private float _cell;
-
-  // Décalage origine : les points sont en coordonnées centrées (-w/2..w/2),
-  // mais la grille est indexée en positif (0..cols). _ox/_oy convertissent.
-  private float _ox, _oy;
-
-  // Dimensions de la zone de génération (égales aux dimensions de l'image)
-  private float _w, _h;
-
-  // Distance minimale entre deux points (= minDist du paramètre)
-  private float _r;
-
-  // Nombre de candidats tentés par point actif avant de l'abandonner.
-  // Plus ce nombre est élevé, plus la grille est dense mais plus c'est lent.
-  private int _maxCandidates;
-
-  // Budget temps maximum par appel à resume() avant de rendre la main à draw()
   static final int MAX_MILLIS = 500;
 
-  // -------------------------------------------------------
-  // start() : initialise l'état et place le premier point
-  // Appelé quand l'image ou les paramètres changent.
-  // -------------------------------------------------------
-  void start(DataDots data, float w, float h)
+  void start(DataDots data, DataImage image, float w, float h)
   {
-    // Réinitialise la liste des points acceptés
     points.clear();
-
-    // Marque la génération comme en cours
-    isComplete = false;
-
+    isComplete       = false;
     lastResumeMillis = 0;
-    progressRatio    = 0;
+    totalCalcMillis  = 0;
+    _startMillis     = System.currentTimeMillis();
 
-    // Estimation du nombre maximum de points :
-    // Nombre de cellules de grille × 0.7 (taux de remplissage empirique du Poisson Disk).
-    // ceil(w / cell) × ceil(h / cell) = nombre total de cellules.
-    // Cette valeur sert uniquement à estimer la progression, pas à arrêter l'algo.
-    _estimatedMax = max(1, (int)(0.7 * ceil(w / (data.minDist / sqrt(2))) * ceil(h / (data.minDist / sqrt(2)))));
-    println("DotsGenerator estimated max points: " + _estimatedMax);
+    _image         = image;
+    _r_min         = 1.0 / data.density;
+    _r_max         = max(_r_min * data.contrast, _r_min);
+    _gamma         = data.gamma;
+    _min_value     = data.min_value;
+    _max_value     = max(data.max_value, data.min_value + 1);
+    _invert        = data.invert;
+    _threshold     = data.threshold;
 
-    println("DotsGenerator.start() minDist=" + data.minDist + " maxCandidates=" + data.maxCandidates + " seed=" + data.seed);
+    _cell = _r_min / sqrt(2);
+    _w    = w;
+    _h    = h;
+    _ox   = w / 2;
+    _oy   = h / 2;
 
-    // Fixe la graine aléatoire pour que le résultat soit reproductible
-    randomSeed(data.seed);
+    _lookRadius = ceil(_r_max / _cell) + 1;
+    _cols       = ceil(w / _cell);
+    int rows    = ceil(h / _cell);
 
-    _r             = data.minDist;
-    _maxCandidates = data.maxCandidates;
-
-    // Taille de cellule = r/√2 : garantit qu'une cellule ≤ 1 point
-    _cell = _r / sqrt(2);
-
-    _w = w;
-    _h = h;
-
-    // Décalage pour passer des coordonnées centrées aux indices de grille
-    _ox = w / 2;
-    _oy = h / 2;
-
-    // Dimensions de la grille en nombre de cellules
-    _cols    = ceil(w / _cell);
-    int rows = ceil(h / _cell);
-
-    // Crée la grille et initialise toutes les cellules à "vide" (-1)
     _grid = new int[_cols * rows];
     java.util.Arrays.fill(_grid, -1);
 
-    // Initialise la liste des points actifs (vide au départ)
-    _active = new ArrayList<PVector>();
+    _active       = new ArrayList<PVector>();
 
-    // Place le premier point aléatoirement dans la zone, l'enregistre et l'active
-    PVector first = new PVector(random(-w/2, w/2), random(-h/2, h/2));
-    _addPoint(first);   // → enregistre dans points[] et dans _grid
-    _active.add(first); // → candidat de départ pour générer ses voisins
+    randomSeed(data.seed);
+
+    println("DotsGenerator.start() density=" + data.density + " r_min=" + _r_min + " r_max=" + _r_max +
+            " contrast=" + data.contrast + " gamma=" + _gamma +
+            " lookRadius=" + _lookRadius +
+            " seed=" + data.seed);
+
+    PVector first = new PVector(0, 0);
+    _addPoint(first);
+    _active.add(first);
   }
 
-  // -------------------------------------------------------
-  // resume() : exécute l'algorithme pendant au plus MAX_MILLIS ms,
-  // puis rend la main. Retourne true si la génération est terminée.
-  // -------------------------------------------------------
   boolean resume()
   {
-    // Déjà terminé : rien à faire
     if (isComplete) return true;
 
-    // Mémorise l'heure de début pour calculer lastResumeMillis et respecter le budget
     long t0       = System.currentTimeMillis();
-    long deadline = t0 + MAX_MILLIS; // heure limite avant de rendre la main
+    long deadline = t0 + MAX_MILLIS;
 
-    // Boucle principale : tant qu'il reste des points actifs
     while (_active.size() > 0)
     {
-      // Si on a dépassé le budget temps → suspendre et revenir au prochain frame
       if (System.currentTimeMillis() >= deadline)
       {
-        lastResumeMillis = (int)(System.currentTimeMillis() - t0);
-        // Progression = nb de points acceptés / estimation du maximum théorique
-        progressRatio = min(1.0, (float)points.size() / _estimatedMax);
-        return false; // pas encore terminé
+        lastResumeMillis  = (int)(System.currentTimeMillis() - t0);
+        totalCalcMillis   = (int)(System.currentTimeMillis() - _startMillis);
+        return false;
       }
 
-      // Choisit un point actif au hasard (évite les biais directionnels)
       int idx   = (int)random(_active.size());
       PVector p = _active.get(idx);
-
-      // Indique si au moins un candidat valide a été trouvé depuis ce point actif
       boolean found = false;
 
-      // Tente maxCandidates fois de placer un nouveau point dans l'anneau [r, 2r] autour de p
-      for (int n = 0; n < _maxCandidates; n++)
+      for (int n = 0; n < CANDIDATES; n++)
       {
-        // Direction aléatoire uniforme sur le cercle
         float angle = random(TWO_PI);
+        float d     = random(_r_min, 2 * _r_max);
 
-        // Distance aléatoire dans l'anneau [r, 2r] :
-        // - trop proche (< r) : violerait la contrainte de distance minimale
-        // - trop loin  (> 2r) : laisserait des "trous" impossibles à remplir depuis p
-        float d = random(_r, 2 * _r);
-
-        // Position du candidat en coordonnées centrées
         PVector candidate = new PVector(p.x + cos(angle) * d,
                                         p.y + sin(angle) * d);
 
-        // Rejette les candidats hors de la zone de génération
         if (candidate.x < -_w/2 || candidate.x > _w/2 ||
             candidate.y < -_h/2 || candidate.y > _h/2) continue;
 
-        // Convertit la position du candidat en indice de cellule de grille
+        float r_local = _getRLocal(candidate);
+        if (r_local < 0) continue; // hors image
+
         int cgx = (int)((candidate.x + _ox) / _cell);
         int cgy = (int)((candidate.y + _oy) / _cell);
 
-        // Vérifie que le candidat est bien à distance ≥ r de tous ses voisins proches.
-        // On inspecte un voisinage 5×5 centré sur la cellule du candidat.
-        // Pourquoi 5×5 ? Un cercle de rayon r peut toucher au maximum 2 cellules
-        // de chaque côté (r / cell = r / (r/√2) = √2 ≈ 1.41 → arrondi à 2).
         boolean ok = true;
-        for (int dy = -2; dy <= 2 && ok; dy++) {
-          for (int dx = -2; dx <= 2 && ok; dx++) {
-            int nx = cgx + dx; // colonne de la cellule voisine
-            int ny = cgy + dy; // ligne   de la cellule voisine
+        float   r2 = r_local * r_local;
 
-            // Ignore les cellules hors des limites de la grille
+        for (int dy = -_lookRadius; dy <= _lookRadius && ok; dy++) {
+          for (int dx = -_lookRadius; dx <= _lookRadius && ok; dx++) {
+            int nx = cgx + dx;
+            int ny = cgy + dy;
             if (nx < 0 || nx >= _cols || ny < 0 || ny >= (_grid.length / _cols)) continue;
-
-            // Récupère l'index du point dans cette cellule voisine (-1 = vide)
             int pidx = _grid[nx + ny * _cols];
-            if (pidx == -1) continue; // cellule vide : pas de conflit
-
-            // Récupère le point voisin et mesure la distance euclidienne
+            if (pidx == -1) continue;
             PVector neighbor = points.get(pidx);
-            if (dist(candidate.x, candidate.y, neighbor.x, neighbor.y) < _r) {
-              ok = false; // trop proche : candidat invalide
-            }
+            float ddx = candidate.x - neighbor.x;
+            float ddy = candidate.y - neighbor.y;
+            if (ddx*ddx + ddy*ddy < r2) ok = false;
           }
         }
 
         if (ok) {
-          // Candidat valide : on l'accepte
-          _addPoint(candidate);  // enregistre dans points[] et _grid
-          _active.add(candidate); // devient lui-même un point actif
+          _addPoint(candidate);
+          _active.add(candidate);
           found = true;
-          break; // on passe au prochain point actif
+          break;
         }
       }
 
-      // Aucun candidat valide trouvé en maxCandidates tentatives :
-      // ce point actif est "saturé", on le retire de la liste.
-      // Les points qui l'entourent sont trop proches pour qu'un nouveau voisin s'y insère.
-      if (!found)
-        _active.remove(idx);
+      if (!found) _active.remove(idx);
     }
 
-    // La liste active est vide → toute la zone est couverte, génération terminée
     isComplete       = true;
     lastResumeMillis = (int)(System.currentTimeMillis() - t0);
-    progressRatio    = 1.0;
+    totalCalcMillis  = (int)(System.currentTimeMillis() - _startMillis);
     println("DotsGenerator: " + points.size() + " points generated");
     return true;
   }
 
-  // Affichage debug : dessine tous les points générés (avant filtrage image)
   void draw()
   {
     for (PVector p : points) {
@@ -250,19 +177,42 @@ class DotsGenerator
     }
   }
 
-  // -------------------------------------------------------
-  // _addPoint() : enregistre un point dans la liste ET dans la grille spatiale
-  // -------------------------------------------------------
+  // Mapping exponentiel en r (log-lineaire) :
+  //
+  //   r_local = r_min * contrast ^ (t_norm ^ gamma)
+  //
+  // t_norm = 0 (noir)  -> r_min * contrast^0 = r_min          (haute densite)
+  // t_norm = 1 (blanc) -> r_min * contrast^1 = r_min*contrast  (basse densite)
+  //
+  // Avantage sur le mapping lineaire en densite :
+  //   le contraste agit uniformement sur TOUTE la plage de tons.
+  //   A gamma=1 et contrast=5, chaque pas de 20% de luminosite
+  //   multiplie r par la meme valeur. Plus besoin de cap.
+  //
+  // gamma > 1 : courbe concave -> zones claires encore plus espacees
+  // gamma < 1 : courbe convexe -> demi-teintes plus espacees
+  //
+  // Retourne -1 si le pixel est hors image.
+  private float _getRLocal(PVector p)
+  {
+    float pixel = _image.getPixelValue(p);
+    if (pixel == -1 || _image.blurred_image == null)
+      return -1;
+    // seuil dur : rejet immediat si pixel trop clair
+    if (pixel > _threshold)
+      return -1;
+    // applique les seuils et normalise dans [0, 1]
+    float t_clamped = constrain(pixel, _min_value, _max_value);
+    float t_norm    = (t_clamped - _min_value) / (_max_value - _min_value);
+    if (_invert) t_norm = 1.0 - t_norm;
+    return _r_min * pow(_r_max / _r_min, pow(t_norm, _gamma));
+  }
+
   private void _addPoint(PVector p)
   {
-    // Ajoute le point à la liste finale
     points.add(p);
-
-    // Calcule la cellule correspondante en coordonnées de grille (positives)
-    int gx = (int)((p.x + _ox) / _cell);
-    int gy = (int)((p.y + _oy) / _cell);
-
-    // Stocke l'index du point dans la cellule (pour la recherche de voisins en O(1))
+    int gx = constrain((int)((p.x + _ox) / _cell), 0, _cols - 1);
+    int gy = constrain((int)((p.y + _oy) / _cell), 0, (_grid.length / _cols) - 1);
     _grid[gx + gy * _cols] = points.size() - 1;
   }
 }

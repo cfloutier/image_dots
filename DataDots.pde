@@ -4,8 +4,17 @@ class DataDots extends GenericData
     super("Dots");
   }
 
-  float minDist       = 12;
-  int   maxCandidates = 30;
+  // Direction B : density = densite de base (zones sombres)
+  // valeur haute = plus de points. r_min interne = 1 / density
+  float density       = 0.5;
+  float contrast      = 10;   // ratio r_max / r_min
+  float gamma         = 1.0;  // courbe de densite : > 1 = moins de pts en demi-teintes
+  // seuils : les pixels hors [min_value, max_value] sont ramenes aux extremes
+  float min_value     = 0;    // pixels en dessous : traites comme noir (dense)
+  float max_value     = 255;  // pixels au dessus  : traites comme blanc (vide)
+  boolean invert      = false; // inverser : zones claires = denses
+  float threshold     = 255;  // seuil dur : pixels au dessus = aucun point place
+
   int   seed          = 42;
 }
 
@@ -16,8 +25,13 @@ class DotsGUI extends GUIPanel
   boolean draw = false;
 
   Toggle draw_toggle;
-  Slider minDist;
-  Slider maxCandidates;
+  Toggle invert_toggle;
+  Slider density;
+  Slider contrast;
+  Slider gamma;
+  Slider min_value;
+  Slider max_value;
+  Slider threshold;
   Textlabel seedLabel;
   Button newSeedButton;
 
@@ -32,10 +46,19 @@ class DotsGUI extends GUIPanel
     super.Init();
 
     draw_toggle   = addToggle("draw_dots", "Draw");
+    invert_toggle = addToggle("invert",    "Invert");
     nextLine();
-    minDist       = addSlider("minDist",       "Min Distance",   0.1, 10);
+    density       = addSlider("density",  "Density",      0.1, 2.0);
     nextLine();
-    maxCandidates = addSlider("maxCandidates", "Max Candidates", 1, 60);
+    contrast      = addSlider("contrast",  "Contrast",     1.0, 30);
+    nextLine();
+    gamma         = addSlider("gamma",     "Gamma",        0.3, 4.0);
+    nextLine();
+    min_value     = addSlider("min_value", "Min Value",    0, 255);
+    nextLine();
+    max_value     = addSlider("max_value", "Max Value",    0, 255);
+    nextLine();
+    threshold     = addSlider("threshold", "Threshold",    0, 255);
     nextLine();
     seedLabel     = inlineLabel("Seed: " + dots.seed, 160);
     newSeedButton = addButton("New Seed");
@@ -44,8 +67,13 @@ class DotsGUI extends GUIPanel
   void setGUIValues()
   {
     draw_toggle.setValue(draw);
-    minDist.setValue(dots.minDist);
-    maxCandidates.setValue(dots.maxCandidates);
+    invert_toggle.setValue(dots.invert);
+    density.setValue(dots.density);
+    contrast.setValue(dots.contrast);
+    gamma.setValue(dots.gamma);
+    min_value.setValue(dots.min_value);
+    max_value.setValue(dots.max_value);
+    threshold.setValue(dots.threshold);
     seedLabel.setText("Seed: " + dots.seed);
   }
 
