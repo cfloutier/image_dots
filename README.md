@@ -1,131 +1,155 @@
 # image_dots
 
-Sketch Processing qui convertit une image en nuage de points par **Poisson Disk Sampling à densité variable**.
+Processing sketch that converts an image into a point cloud using **variable-density Poisson Disk Sampling**.
 
 ---
 
-## Principe
+## Examples
 
-On génère directement la distribution finale en faisant varier `r` (la distance minimale entre deux points) en fonction de la luminosité du pixel sous chaque candidat :
+### Eye — default settings
 
-```
-zone sombre  →  r petit  →  points rapprochés  →  haute densité
-zone claire  →  r grand  →  points espacés     →  faible densité
-```
+| Source | Result |
+|--------|--------|
+| <img src="docs/eye2.png" width="400"> | <img src="docs/eye2_dots.png" width="400"> |
 
-La propriété **blue noise** est maintenue à toutes les échelles : pas de clusters, pas de trous. La distribution est perceptuellement uniforme à la densité locale dictée par l'image.
+**Parameters:** density=`0.59` · contrast=`14.15` · gamma=`1.98` · min_value=`22.10` · max_value=`196.35`
 
 ---
 
-## Formule de r_local
+### Eye — high density (`huge_eye` preset)
 
-Mapping log-linéaire (exponentiel en r) :
+Same source image, higher density and larger canvas — full result and centre crop.
+
+| Full frame | Centre crop |
+|------------|-------------|
+| <img src="docs/eye2_dots_high.png" width="400"> | <img src="docs/eye2_dots_close_up.png" width="400"> |
+
+**Parameters:** density=`1.60` · contrast=`14.15` · gamma=`1.98` · min_value=`22.10` · max_value=`196.35`
+
+---
+
+## Usage Tips
+
+- A `contrast` ratio of **5 to 15** gives balanced results. Beyond 20, bright areas become nearly empty.
+- `gamma > 1` (e.g. 2–3) protects midtones and avoids an overly abrupt transition between dark and bright.
+- `min_value` / `max_value` allow cropping the tonal range of the image without external editing.
+- `threshold` at 240–250 is enough to clear residual points in near-white areas without disturbing midtones.
+- In **Polygon** mode, `sides = 3` gives triangles, `sides = 6` hexagons — well suited for plotters.
+
+---
+
+## Principle
+
+The final distribution is generated directly by varying `r` (the minimum distance between two points) based on the brightness of the pixel beneath each candidate:
+
+```
+dark area   →  small r  →  close points   →  high density
+bright area →  large r  →  sparse points  →  low density
+```
+
+The **blue noise** property is maintained at all scales: no clusters, no gaps. The distribution is perceptually uniform at the local density dictated by the image.
+
+---
+
+## r_local Formula
+
+Log-linear mapping (exponential in r):
 
 ```
 r_local = r_min × contrast ^ (t_norm ^ gamma)
 ```
 
-- `t_norm` ∈ [0, 1] : luminosité normalisée du pixel après clamp sur `[min_value, max_value]`, puis inversion optionnelle
-- `t_norm = 0` (noir) → `r_local = r_min` (haute densité)
-- `t_norm = 1` (blanc) → `r_local = r_min × contrast` = `r_max` (basse densité)
+- `t_norm` ∈ [0, 1]: normalized pixel brightness after clamping to `[min_value, max_value]`, then optional inversion
+- `t_norm = 0` (black) → `r_local = r_min` (high density)
+- `t_norm = 1` (white) → `r_local = r_min × contrast` = `r_max` (low density)
 
-Ce mapping garantit qu'un même écart de luminosité multiplie `r` par le même facteur sur toute la plage de tons, quel que soit le niveau de gris de départ.
+This mapping ensures that the same brightness difference multiplies `r` by the same factor across the entire tonal range, regardless of the starting grey level.
 
 ---
 
 ## Architecture
 
-| Fichier | Rôle |
-|---------|------|
+| File | Role |
+|------|------|
 | `image_dots.pde` | Setup, draw loop, HUD |
-| `DataGlobal.pde` | `ImageDotsData` — agrège image, style, dots, shape |
-| `DataDots.pde` | Paramètres Poisson + GUI onglet Dots |
-| `DataShape.pde` | Paramètres rendu + GUI onglet Shape |
-| `DataGUI.pde` | `MainPanel` — assemble les 5 onglets |
-| `DotsGenerator.pde` | Algorithme Poisson Disk Sampling à densité variable |
-| `DotsRenderer.pde` | Dessin des points (mode point ou polygone régulier) |
+| `DataGlobal.pde` | `ImageDotsData` — aggregates image, style, dots, shape |
+| `DataDots.pde` | Poisson parameters + Dots tab GUI |
+| `DataShape.pde` | Rendering parameters + Shape tab GUI |
+| `DataGUI.pde` | `MainPanel` — assembles the 5 tabs |
+| `DotsGenerator.pde` | Variable-density Poisson Disk Sampling algorithm |
+| `DotsRenderer.pde` | Point rendering (point mode or regular polygon) |
 
 ---
 
-## Paramètres Dots
+## Dots Parameters
 
-| Paramètre | Défaut | Rôle |
-|-----------|--------|------|
-| `density` | 0.5 | Densité de base — `r_min = 1 / density` |
-| `contrast` | 10 | Ratio `r_max / r_min` — écart entre zones sombres et claires |
-| `gamma` | 1.0 | Courbe de densité : `> 1` espace les demi-teintes, `< 1` les resserre |
-| `min_value` | 0 | Pixels en dessous traités comme noir (dense) |
-| `max_value` | 255 | Pixels au dessus traités comme blanc (vide) |
-| `invert` | false | Inverser : zones claires = denses |
-| `seed` | 42 | Graine aléatoire |
+| Parameter | Default | Role |
+|-----------|---------|------|
+| `density` | 0.5 | Base density — `r_min = 1 / density` |
+| `contrast` | 10 | `r_max / r_min` ratio — gap between dark and bright areas |
+| `gamma` | 1.0 | Density curve: `> 1` spreads midtones, `< 1` compresses them |
+| `min_value` | 0 | Pixels below this are treated as black (dense) |
+| `max_value` | 255 | Pixels above this are treated as white (empty) |
+| `invert` | false | Invert: bright areas become dense |
+| `seed` | 42 | Random seed |
 
-## Paramètres Shape
+## Shape Parameters
 
-| Paramètre | Défaut | Rôle |
-|-----------|--------|------|
-| `mode` | Point | `Point` ou `Polygon` |
-| `sides` | 6 | Nombre de côtés du polygone régulier |
-| `size` | 3.0 | Rayon du polygone (en px) |
-
----
-
-## Détails d'implémentation
-
-### Grille spatiale
-
-La cellule vaut `r_min / √2`, ce qui garantit qu'une cellule contient au plus un point.  
-Le rayon d'inspection est `ceil(r_max / cell) + 1` cellules dans chaque direction, pour couvrir tous les voisins potentiels même quand `r_max >> r_min`.
-
-### Génération progressive
-
-La génération s'effectue en tranches de 500 ms (`start()` + `resume()`), ce qui maintient la fluidité de l'interface pendant le calcul. Le HUD affiche le nombre de points et le temps de calcul en temps réel.
-
-### Déclenchement automatique
-
-Le générateur redémarre automatiquement dès qu'un paramètre image ou dots change. Les paramètres style et shape sont appliqués sans recalcul.
+| Parameter | Default | Role |
+|-----------|---------|------|
+| `mode` | Point | `Point` or `Polygon` |
+| `sides` | 6 | Number of sides of the regular polygon |
+| `size` | 3.0 | Polygon radius (in px) |
 
 ---
 
-## Conseils d'utilisation
+## Implementation Details
 
-- Un ratio `contrast` de **5 à 15** donne des résultats équilibrés. Au-delà de 20 les zones claires deviennent quasi-vides.
-- `gamma > 1` (ex : 2–3) protège les demi-teintes et évite une transition trop abrupte entre sombre et clair.
-- `min_value` / `max_value` permettent de cropper la plage tonale de l'image sans retouche externe.
-- `threshold` à 240–250 suffit à purger les points résiduels dans les zones quasi-blanches sans perturber les demi-teintes.
-- En mode **Polygon**, `sides = 3` donne des triangles, `sides = 6` des hexagones — bien adapté aux traceurs.
+### Spatial Grid
+
+The cell size is `r_min / √2`, which guarantees that a cell contains at most one point.  
+The inspection radius is `ceil(r_max / cell) + 1` cells in each direction, to cover all potential neighbours even when `r_max >> r_min`.
+
+### Progressive Generation
+
+Generation is performed in 200 ms slices (`start()` + `resume()`), keeping the interface responsive during computation. The HUD displays the point count and computation time in real time.
+
+### Automatic Triggering
+
+The generator restarts automatically whenever an image or dots parameter changes. Style and shape parameters are applied without recomputation.
 
 ---
 
 ## Changelog
 
 ### 2026-05-09
-- **Threshold (seuil dur)** : ajout du paramètre `threshold` dans `DataDots` et du slider correspondant. Tout candidat dont le pixel dépasse le seuil est rejeté immédiatement dans `_getRLocal`, avant le calcul de `r_local`. Nettoie les quelques points résiduels qui apparaissent dans les zones totalement blanches malgré un `contrast` élevé.
+- **Threshold (hard cutoff)**: added the `threshold` parameter to `DataDots` and its corresponding slider. Any candidate whose pixel exceeds the threshold is immediately rejected in `_getRLocal`, before `r_local` is computed. Cleans up the few residual points that appear in fully white areas despite a high `contrast` value.
 
-### 2026-05-07 
-- **README** : réécriture complète pour refléter l'état réel du code (formule log-linéaire, architecture, paramètres exacts, conseils).
-- **Fix** : suppression d'une valeur statique résiduelle dans `DataDots`.
-- **HUD progressif** : affichage du nombre de points et du temps de calcul en temps réel pendant la génération (`totalCalcMillis`, `lastResumeMillis`). Ajout de `StringUtils.formatDuration()` et `StringUtils.formatInt()`.
+### 2026-05-07
+- **README**: complete rewrite to reflect the actual state of the code (log-linear formula, architecture, exact parameters, tips).
+- **Fix**: removed a residual static value in `DataDots`.
+- **Progressive HUD**: displays point count and computation time in real time during generation (`totalCalcMillis`, `lastResumeMillis`). Added `StringUtils.formatDuration()` and `StringUtils.formatInt()`.
 
-### 2026-05-06 
-- **Poisson à densité variable (Direction B)** : refonte complète du `DotsGenerator`. On ne filtre plus une distribution uniforme — on génère directement la distribution finale en calculant un `r_local` pour chaque candidat à partir de la luminosité du pixel sous sa position.
-- **Mapping log-linéaire** : `r_local = r_min × contrast ^ (t_norm ^ gamma)`. Remplace le mapping linéaire prévu initialement — chaque pas de luminosité multiplie `r` par le même facteur sur toute la plage de tons.
-- **Paramètre `density`** : remplace `r_min` en entrée GUI (`r_min = 1 / density`), plus intuitif.
-- **Paramètre `contrast`** : ratio `r_max / r_min`, remplace un `r_max` absolu.
-- **Paramètres `min_value` / `max_value`** : clamp de la plage tonale avant normalisation — permettent de cibler une sous-plage de l'histogramme.
-- **Paramètre `invert`** : inverse `t_norm` pour que les zones claires soient denses.
-- **Suppression de `DotsFilter`** : le filtre de post-traitement et `DataFilter` sont supprimés — inutiles avec la génération directe.
-- **`DotsRenderer`** : extraction du rendu dans une classe dédiée, séparé du générateur. Supporte le mode `Point` et le mode `Polygon` (polygone régulier centré sur chaque point).
-- **`DataShape`** : nouveaux paramètres `mode`, `sides`, `size` pour le rendu, avec onglet GUI dédié.
-- **Grille spatiale adaptée** : cellule = `r_min / √2`, rayon d'inspection = `ceil(r_max / cell) + 1` pour couvrir tous les voisins même quand `r_max >> r_min`.
+### 2026-05-06
+- **Variable-density Poisson (Direction B)**: complete overhaul of `DotsGenerator`. No longer filtering a uniform distribution — the final distribution is generated directly by computing a `r_local` for each candidate from the brightness of the pixel beneath its position.
+- **Log-linear mapping**: `r_local = r_min × contrast ^ (t_norm ^ gamma)`. Replaces the initially planned linear mapping — each brightness step multiplies `r` by the same factor across the entire tonal range.
+- **`density` parameter**: replaces `r_min` as GUI input (`r_min = 1 / density`), more intuitive.
+- **`contrast` parameter**: `r_max / r_min` ratio, replaces an absolute `r_max`.
+- **`min_value` / `max_value` parameters**: tonal range clamp before normalisation — allow targeting a sub-range of the histogram.
+- **`invert` parameter**: inverts `t_norm` so that bright areas become dense.
+- **Removed `DotsFilter`**: the post-processing filter and `DataFilter` are removed — unnecessary with direct generation.
+- **`DotsRenderer`**: rendering extracted into a dedicated class, separate from the generator. Supports `Point` mode and `Polygon` mode (regular polygon centred on each point).
+- **`DataShape`**: new `mode`, `sides`, `size` rendering parameters, with a dedicated GUI tab.
+- **Adapted spatial grid**: cell = `r_min / √2`, inspection radius = `ceil(r_max / cell) + 1` to cover all neighbours even when `r_max >> r_min`.
 
-### 2026-05-04 
-- **Génération progressive** (`resume()`) : la génération Poisson s'effectue en tranches de 500 ms pour ne pas bloquer l'interface.
-- **`DataShape` + `DotsRenderer`** (v1) : premier ajout du rendu en polygones réguliers.
-- **Commentaires** : documentation de `DotsGenerator` et `DotsFilter`.
+### 2026-05-04
+- **Progressive generation** (`resume()`): Poisson generation is performed in 500 ms slices to avoid blocking the interface.
+- **`DataShape` + `DotsRenderer`** (v1): first addition of regular polygon rendering.
+- **Comments**: documentation of `DotsGenerator` and `DotsFilter`.
 
-### 2026-05-02 
-- **Premiers fichiers** : setup Processing, centrage de l'image, export PDF/SVG/DXF.
-- **Grille de points** : première implémentation du Poisson Disk Sampling uniforme avec grille spatiale.
-- **Densité uniforme** : paramètre `density` basique.
-- **Seed** : paramètre `seed` pour la reproductibilité.
+### 2026-05-02
+- **First files**: Processing setup, image centering, PDF/SVG/DXF export.
+- **Point grid**: first implementation of uniform Poisson Disk Sampling with spatial grid.
+- **Uniform density**: basic `density` parameter.
+- **Seed**: `seed` parameter for reproducibility.
 - **Filtre binaire** (`DotsFilter`) : premier filtre de post-traitement — suppression des points au-dessus d'un seuil de luminosité.
