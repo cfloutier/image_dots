@@ -8,6 +8,7 @@ class DataGUI extends MainPanel
   StyleGUI style_ui;
   DotsGUI dots_ui;
   ShapeGUI shape_ui;
+  SortGUI sort_ui;
 
   public DataGUI(ImageDotsData data)
   {
@@ -17,6 +18,7 @@ class DataGUI extends MainPanel
     style_ui = new StyleGUI(data.style);
     dots_ui = new DotsGUI(data.dots);
     shape_ui = new ShapeGUI(data.shape);
+    sort_ui = new SortGUI(data.sort);
   }
 
   void Init()
@@ -26,6 +28,7 @@ class DataGUI extends MainPanel
     addTab(style_ui);
     addTab(dots_ui);
     addTab(shape_ui);
+    addTab(sort_ui);
 
     super.Init();
 

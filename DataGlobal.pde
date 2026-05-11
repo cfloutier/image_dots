@@ -6,6 +6,7 @@ class ImageDotsData extends DataGlobal
   Style style = new Style();
   DataDots dots = new DataDots();
   DataShape shape = new DataShape();
+  DataSort sort = new DataSort();
 
   ImageDotsData()
   {
@@ -13,6 +14,7 @@ class ImageDotsData extends DataGlobal
     addChapter(style);
     addChapter(dots);
     addChapter(shape);
+    addChapter(sort);
   }
 
   void reset()
@@ -21,5 +23,6 @@ class ImageDotsData extends DataGlobal
     style.CopyFrom(new Style());
     dots.CopyFrom(new DataDots());
     shape.CopyFrom(new DataShape());
+    sort.CopyFrom(new DataSort());
   }
 }
