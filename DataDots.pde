@@ -48,7 +48,7 @@ class DotsGUI extends GUIPanel
     draw_toggle   = addToggle("draw_dots", "Draw");
     invert_toggle = addToggle("invert",    "Invert");
     nextLine();
-    density       = addSlider("density",  "Density",      0.1, 2.0);
+    density       = addSlider("density",  "Density",      0.1, 4.0);
     nextLine();
     contrast      = addSlider("contrast",  "Contrast",     1.0, 30);
     nextLine();
