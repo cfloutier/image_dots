@@ -60,24 +60,19 @@ void draw()
     _sort_dirty = true;
   }
 
-  // marquer le tri à refaire si l'option vient d'être activée
-  if (sort_changed && data.sort.enabled)
+  // marquer le tri à refaire si l'option ou ses paramètres ont changé
+  if (sort_changed)
     _sort_dirty = true;
 
   // continuer la génération si pas encore terminée
   if (!generator.isComplete)
     generator.resume();
 
-  // démarrer / continuer le tri une fois la génération terminée
-  if (generator.isComplete && data.sort.enabled)
+  // démarrer le tri une fois la génération terminée
+  if (generator.isComplete && data.sort.enabled && _sort_dirty)
   {
-    if (_sort_dirty)
-    {
-      sorter.start(generator.points);
-      _sort_dirty = false;
-    }
-    if (!sorter.isComplete)
-      sorter.resume();
+    sorter.start(generator.points, data.sort.hex_size);
+    _sort_dirty = false;
   }
 
   long t_draw_start = System.currentTimeMillis();
@@ -97,6 +92,9 @@ void draw()
 
     if (dataGui.sort_ui.draw_path && data.sort.enabled)
       sorter.drawPath();
+
+    if (dataGui.sort_ui.draw_hex_transitions && data.sort.enabled)
+      sorter.drawHexTransitions();
 
     if (dataGui.shape_ui.draw)
       renderer.draw(pts, data.shape, false);

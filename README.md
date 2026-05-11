@@ -78,6 +78,8 @@ This mapping ensures that the same brightness difference multiplies `r` by the s
 | `DataGUI.pde` | `MainPanel` — assembles the 5 tabs |
 | `DotsGenerator.pde` | Variable-density Poisson Disk Sampling algorithm |
 | `DotsRenderer.pde` | Point rendering (point mode or regular polygon) |
+| `DataSort.pde` | Sort parameters + Sort tab GUI |
+| `DotsSort.pde` | Hexagonal spiral sort algorithm |
 
 ---
 
@@ -101,6 +103,13 @@ This mapping ensures that the same brightness difference multiplies `r` by the s
 | `sides` | 6 | Number of sides of the regular polygon |
 | `size` | 3.0 | Polygon radius (in px) |
 
+## Sort Parameters
+
+| Parameter | Default | Role |
+|-----------|---------|------|
+| `enabled` | false | Activate hexagonal spiral sort |
+| `hex_size` | 100 | Hexagon cell radius in pixels |
+
 ---
 
 ## Implementation Details
@@ -118,9 +127,29 @@ Generation is performed in 200 ms slices (`start()` + `resume()`), keeping the i
 
 The generator restarts automatically whenever an image or dots parameter changes. Style and shape parameters are applied without recomputation.
 
+### Hexagonal Spiral Sort
+
+The sort reorders points to minimise plotter travel distance, using a two-level strategy:
+
+1. **Cell assignment** — each point is mapped to a hexagonal grid cell using axial (pointy-top) coordinates. Cell size is controlled by `hex_size`.
+2. **Spiral traversal** — cells are visited in a ring-by-ring spiral from the centre cell outward (ring 0, then ring 1 with 6 cells, ring 2 with 12, etc.).
+3. **Local nearest-neighbour** — within each cell, points are ordered by nearest-neighbour starting from the last point of the previous cell, ensuring smooth inter-cell transitions.
+
+The result is a globally coherent spiral order with locally optimised segments. Smaller `hex_size` values approach a full nearest-neighbour sort; larger values make the spiral structure more pronounced.
+
+**Visualisation toggles (Sort tab):**
+- *Draw path* — draws the full point sequence with a rainbow gradient (red = start, violet = end)
+- *Draw hex transitions* — draws each hexagonal cell outline (rainbow-coloured) and the yellow centre-to-centre lines showing the spiral traversal order
+
 ---
 
 ## Changelog
+
+### 2026-05-11
+- **Sort tab**: new `DataSort` + `SortGUI` — hexagonal spiral sort (`DotsSort`) to optimise plotter travel order.
+- **DotsSort**: points assigned to axial hexagonal cells, visited ring by ring in a spiral; nearest-neighbour within each cell; transitions start from last visited point for smooth inter-cell jumps.
+- **Visualisation**: *Draw path* (rainbow gradient) and *Draw hex transitions* (hex outlines + yellow centre-to-centre lines) to inspect the sort result.
+- **Export**: sorted order used automatically when sort is enabled and complete.
 
 ### 2026-05-09
 - **Threshold (hard cutoff)**: added the `threshold` parameter to `DataDots` and its corresponding slider. Any candidate whose pixel exceeds the threshold is immediately rejected in `_getRLocal`, before `r_local` is computed. Cleans up the few residual points that appear in fully white areas despite a high `contrast` value.
