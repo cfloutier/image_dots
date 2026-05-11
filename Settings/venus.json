@@ -1,0 +1,37 @@
+{
+  "Shape": {
+    "mode": 0,
+    "size": 0.10000000149011612,
+    "sides": 12
+  },
+  "Style": {
+    "backgroundColor": -1,
+    "lineColor": -13877680,
+    "lineWidth": 1.0166666507720947
+  },
+  "Page": {
+    "clipping": false,
+    "clip_width": 0,
+    "margin": 2,
+    "clip_height": 0,
+    "paper_format": 2,
+    "global_scale": 0.2016129046678543
+  },
+  "Dots": {
+    "min_value": 22.100000381469727,
+    "density": 1.2400000095367432,
+    "invert": false,
+    "seed": 82451,
+    "contrast": 8.540000915527344,
+    "threshold": 238.85000610351562,
+    "gamma": 1.8416666984558105,
+    "max_value": 196.35000610351562
+  },
+  "Image": {
+    "reset_image": false,
+    "Blur": 1,
+    "Width": 1100,
+    "Contrast": 0,
+    "source_file": "venus-nobg.png"
+  }
+}

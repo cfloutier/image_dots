@@ -164,20 +164,24 @@ class FileGUI extends GUIPanel
   void LoadJson()
   {
     println("LoadJson ");
+    stop_compute = true;
     selectInput("Select data file ", "loadSelected", dataFile("../Settings/default.json")  );
   }
 
   void SaveJson()
   {
     println("SaveJson ");
-
+    stop_compute = true;
     selectInput("Save data file ", "saveSelected", dataFile(default_path()));
   }
 
   void Save()
   {
     if (data.settings_path != "")
+    {
+      stop_compute = true;
       data.SaveSettings(data.settings_path);
+    }
   }
 
   void ExportPDF()
@@ -272,6 +276,7 @@ void loadSelected(File selection)
 }
 
 boolean _record = false;
+boolean stop_compute = false; // interrompt le calcul en cours lors d'un load/save
 int mode  = 0;
 
 String export_fileName = "";
@@ -285,6 +290,7 @@ void ExportPDF()
 void ExportDXF()
 {
   _record = true;
+  data.changed = true;
   mode = 1;
 }
 

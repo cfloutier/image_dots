@@ -52,10 +52,11 @@ class DotsGenerator
   // Reference a l'image pour lire les pixels pendant la generation
   private DataImage _image;
 
-  static final int MAX_MILLIS = 500;
+  static final int MAX_MILLIS = 200;
 
   void start(DataDots data, DataImage image, float w, float h)
   {
+    stop_compute = false;
     points.clear();
     isComplete       = false;
     lastResumeMillis = 0;
@@ -107,7 +108,7 @@ class DotsGenerator
 
     while (_active.size() > 0)
     {
-      if (System.currentTimeMillis() >= deadline)
+      if (stop_compute || System.currentTimeMillis() >= deadline)
       {
         lastResumeMillis  = (int)(System.currentTimeMillis() - t0);
         totalCalcMillis   = (int)(System.currentTimeMillis() - _startMillis);
