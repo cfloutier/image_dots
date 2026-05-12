@@ -12,7 +12,7 @@ class DotsRenderer
   void draw(ArrayList<PVector> points, DataShape shape, boolean verbose)
   {
     int total    = points.size();
-    int log_step = max(1, total / 20); // log tous les 5%
+    int log_step = max(1, total / 10); // log tous les 10%
 
     if (verbose)
       println("Export: dessin de " + StringUtils.formatInt(total) + " points...");
@@ -52,6 +52,6 @@ class DotsRenderer
     }
 
     if (verbose)
-      println("Export: done.");
+      println("Export dots: done. Saving in progress... Please wait");
   }
 }

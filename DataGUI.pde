@@ -27,8 +27,8 @@ class DataGUI extends MainPanel
     addTab(images_ui);
     addTab(style_ui);
     addTab(dots_ui);
-    addTab(shape_ui);
     addTab(sort_ui);
+    addTab(shape_ui);
 
     super.Init();
 
