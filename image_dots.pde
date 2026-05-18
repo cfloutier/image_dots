@@ -1,4 +1,4 @@
-import controlP5.*;
+// import controlP5.*;
 import processing.pdf.*;
 import processing.dxf.*;
 import processing.svg.*;
@@ -50,8 +50,8 @@ void draw()
   // toujours réinitialiser (couvre aussi style et page)
   data.reset_all_changes();
 
-  float iw = (data.image.blurred_image != null) ? data.image.blurred_image.width  : width;
-  float ih = (data.image.blurred_image != null) ? data.image.blurred_image.height : height;
+  float iw = (data.image.transformed_image != null) ? data.image.transformed_image.width  : width;
+  float ih = (data.image.transformed_image != null) ? data.image.transformed_image.height : height;
 
   // Phase 1 : générer les positions — redémarre si image ou dots ont changé
   if (image_changed || dots_changed)

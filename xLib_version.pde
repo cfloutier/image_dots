@@ -1,12 +1,15 @@
 String get_xlib_version()
 {
-  return "2.2.15";
+  return "2.2.16";
 }
 
 
 /*
 
  # CHANGELOG
+
+ ## [2.2.16] - 2026-05-18
+ - xLib_Image: renamed blurred_image to transformed_image to reflect that it may also include contrast changes (TODO), not just blur 
 
  ## [2.2.15] - 2026-05-10
  - xLib_FileUI: FileGUI constructor takes optional boolean show_clipping (default false) — hides clipping controls in projects that don't use it
