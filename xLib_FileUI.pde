@@ -30,6 +30,8 @@ class FileGUI extends GUIPanel
   float export_scale = 1.0;
   boolean export_should_rotate = false;
 
+  int last_save_duration = -1;
+
   FileGUI(DataGlobal data)
   {
     this(data, false);
@@ -278,6 +280,7 @@ void loadSelected(File selection)
 boolean _record = false;
 boolean stop_compute = false; // interrompt le calcul en cours lors d'un load/save
 int mode  = 0;
+long _record_start_millis = 0;
 
 String export_fileName = "";
 void ExportPDF()
@@ -343,7 +346,8 @@ void start_draw()
       current_graphics = createGraphics((int)newWidth, (int)newheight, SVG, export_fileName);
     }
 
-    println("Exported to " + export_fileName);
+    println("Saving file in progress... please wait. " + export_fileName);
+    _record_start_millis = System.currentTimeMillis();
 
     data.setSize(newWidth, newheight);
 
@@ -392,6 +396,9 @@ void end_draw()
     current_graphics.popMatrix();  // Close the pushMatrix from start_draw
     current_graphics.dispose();
     current_graphics.endDraw();
+    int duration = (int)(System.currentTimeMillis() - _record_start_millis);
+    file_ui.last_save_duration = duration;
+    println("Save completed in " + StringUtils.formatDuration(duration));
     _record = false;
   } else {
     popMatrix();  // Close the pushMatrix from start_draw
