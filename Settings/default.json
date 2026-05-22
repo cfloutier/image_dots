@@ -1,37 +1,44 @@
 {
   "Shape": {
     "mode": 0,
-    "MODE_POLYGON": 1,
     "size": 0.10000000149011612,
-    "sides": 12,
-    "MODE_POINT": 0
+    "sides": 12
   },
   "Style": {
     "backgroundColor": -1,
     "lineColor": -13877680,
     "lineWidth": 3.316666841506958
   },
+  "Sort": {"hex_size": 10},
   "Page": {
     "clipping": false,
     "clip_width": 0,
-    "margin": 2,
+    "margin": 0,
     "clip_height": 0,
-    "paper_format": 0,
+    "paper_format": 2,
     "global_scale": 1
   },
   "Dots": {
     "min_value": 22.100000381469727,
     "density": 0.5876666307449341,
+    "invert": false,
     "seed": 82451,
     "contrast": 14.14666748046875,
+    "threshold": 255,
     "gamma": 1.9773333072662354,
     "max_value": 196.35000610351562
   },
   "Image": {
+    "levelsMax": 255,
+    "levelsGamma": 0,
     "reset_image": false,
+    "imageAlpha": 0,
+    "levelsMin": 0,
     "Blur": 1,
+    "draw": true,
     "Width": 776,
     "Contrast": 0,
+    "blackAndWhite": false,
     "source_file": "eye2.png"
   }
 }

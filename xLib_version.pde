@@ -1,12 +1,44 @@
 String get_xlib_version()
 {
-  return "2.2.16";
+  return "2.4.0";
 }
 
 
 /*
 
  # CHANGELOG
+
+ ## [2.4.0] - 2026-05-22
+ - xLib_ExportUtils: removed EXPORT_DPI — getPaperDimensions() now returns mm (physical units)
+ - xLib_ExportUtils: added mmToSvgPx() — mm to SVG px conversion using fixed standard (96px/inch, not a calibration value)
+ - xLib_FileUI: SVG/PDF canvas sized via mmToSvgPx() instead of a configurable DPI
+ - xLib_ExportUtils: replaced 10cm margin option with 2cm — margins are now 0cm, 1cm, 2cm, 3cm
+ - Fix: A3 export was producing A2 output in Inkscape (EXPORT_DPI=135 ≈ 96×√2 caused one paper size offset)
+
+ ## [2.3.0] - 2026-05-22
+ - xLib_FileUI: ScaleSlider caption label aligned consistently with other sliders (marginTop/marginLeft)
+ - image_lines: Image tab opened by default
+
+ ## [2.2.20] - 2026-05-22
+ - xLib_Image: draw toggle and imageAlpha moved to DataImage (saved/loaded via JSON)
+ - xLib_Image: blackAndWhite toggle — applies GRAY filter during buildTransformedImage
+ - xLib_Image: levels adjustment (levelsMin, levelsMax, levelsGamma) applied pixel-by-pixel; gamma uses -1..1 slider mapped via pow(5,x)
+ - xLib_Image: Reset Levels button restores default level values
+ - xLib_Image: buildBlurredImage renamed to buildTransformedImage
+
+ ## [2.2.19] - 2026-05-22
+ - processing_xlib: création du fichier .github/copilot-instructions.md avec le contexte xLib (workflow, projets synchronisés, scripts)
+ 
+ ## [2.2.18] - 2026-05-18
+ - xLib_Polyline: added getBoundingBox() method to calculate the bounding box of a polyline, used for clipping and export.
+ - xLib_Polyline: added PolylineGroup class to manage groups of polylines with integrated clipping and bounding box support.
+
+
+ ## [2.2.17] - 2026-05-10
+ - processing_xlib: switched to PolylineGroup for drawing and bbox — clipping logic no longer duplicated in sketch
+ - processing_xlib: buildLines() generates N polylines with random point count (nb_points_min to nb_points_max) on the ellipse
+ - processing_xlib: replaced nb_lines with nb_polylines, nb_points_min, nb_points_max parameters
+
 
  ## [2.2.16] - 2026-05-18
  - xLib_Image: renamed blurred_image to transformed_image to reflect that it may also include contrast changes (TODO), not just blur 

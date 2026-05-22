@@ -9,7 +9,7 @@ class DataPage extends GenericData
   float clip_height = 600;
   
   int paper_format = PAPER_NONE;  // 0: None, 1: A4, 2: A3, 3: A2
-  int margin = MARGIN_3CM;  // 0: 1cm, 1: 3cm, 2: 10cm
+  int margin = MARGIN_3CM;  // 0: 0cm, 1: 1cm, 2: 2cm, 3: 3cm
 
   DataPage() {
     super("Page");
@@ -107,15 +107,16 @@ class FileGUI extends GUIPanel
 
     nextLine();
     addLabel("Page : ");
-    nextLine();
     scale_slider = new ScaleSlider(cp5, "Scale");
 
     scale_slider.setPosition(xPos, yPos)
       .setSize(widthCtrl, heightCtrl)
       .setRange(-9, 9)
       .moveTo("Files")
-      .setValue(0)
-      .getCaptionLabel().align(ControlP5.LEFT, ControlP5.TOP_OUTSIDE).setPaddingX(0);
+      .setValue(0);
+
+    scale_slider.getCaptionLabel().getStyle().marginTop = 0;
+    scale_slider.getCaptionLabel().getStyle().marginLeft = -getWidthLabel("Scale") - 8;
 
     xPos += widthCtrl + 10;
 
@@ -144,13 +145,13 @@ class FileGUI extends GUIPanel
     paper_formats.add("A2");
     paper_format_radio = addRadio("paper_format", paper_formats);
     
-    nextLine();
+    // nextLine();
     addLabel("Margins :");
     ArrayList<String> margins = new ArrayList<String>();
     margins.add("0 cm");
     margins.add("1 cm");
+    margins.add("2 cm");
     margins.add("3 cm");
-    margins.add("10 cm");
     margin_radio = addRadio("margin", margins);
   }
 
@@ -211,6 +212,7 @@ class FileGUI extends GUIPanel
     last_bbox = bbox;
     export_should_rotate = shouldRotateForExport(bbox);
     export_scale = calculateExportScale(bbox, data.page.paper_format, data.page.margin, export_should_rotate);
+    // println("[FileUI] updateExportScale -> scale=" + export_scale + " rotate=" + export_should_rotate + " paper=" + data.page.paper_format);
   }
 }
 
@@ -236,9 +238,6 @@ void saveSelected(File selection)
   }
 }
 
-
-// Slider slider_crop_width;
-// Slider slider_crop_height;
 
 //subclass slider
 public class ScaleSlider extends Slider {
@@ -319,8 +318,15 @@ void start_draw()
     if (name == "")
       name = "default";
 
-    float newWidth = width ;
-    float newheight = height ;
+    float newWidth = width;
+    float newheight = height;
+
+    // Si un format papier est sélectionné, utiliser ses dimensions pour le canvas SVG/PDF
+    if (data.page.paper_format != PAPER_NONE) {
+      float[] paper_dims_mm = getPaperDimensions(data.page.paper_format);
+      newWidth = mmToSvgPx(paper_dims_mm[0]);
+      newheight = mmToSvgPx(paper_dims_mm[1]);
+    }
 
     // Add paper format to filename
     String format_suffix = "";
@@ -349,21 +355,19 @@ void start_draw()
     println("Saving file in progress... please wait. " + export_fileName);
     _record_start_millis = System.currentTimeMillis();
 
-    data.setSize(newWidth, newheight);
-
     current_graphics.beginDraw();
-    
-    
+
     // Calculate active scale for export
     float active_scale = (data.page.paper_format != PAPER_NONE) ? file_ui.export_scale : data.page.global_scale;
     printExportDebugInfo(file_ui.last_bbox, active_scale, data.page.paper_format);
 
-    // Apply transformations to current_graphics (PDF/SVG/DXF)
     current_graphics.pushMatrix();
     current_graphics.strokeWeight(data.style.lineWidth * active_scale);
+    // Centrage sur le canvas papier : le dessin est en coordonnées centrées sur (0,0)
+    if (data.page.paper_format != PAPER_NONE) {
+      current_graphics.translate(newWidth / 2, newheight / 2);
+    }
     current_graphics.scale(active_scale, active_scale);
-    
-    // Rotate only if drawing is landscape-oriented (wider than tall)
     if (file_ui.export_should_rotate) {
       current_graphics.rotate(-PI/2);
     }

@@ -15,6 +15,7 @@ ControlP5 cp5;
 void setup()
 {
   size(1200, 800);
+  pixelDensity(1);
   surface.setResizable(true);
 
   data = new ImageDotsData();
@@ -38,10 +39,14 @@ void setupControls()
 
 void draw()
 {
+  if (generator.isComplete && generator.points.size() > 0)
+    file_ui.updateExportScale(generator.getBoundingBox());
+
   start_draw();
 
-  data.image.buildBlurredImage();
-  data.image.draw(dataGui.images_ui.imageAlpha);
+  data.image.buildTransformedImage();
+  if (data.image.draw)
+    data.image.draw(data.image.imageAlpha);
 
   boolean image_changed = data.image.changed;
   boolean dots_changed  = data.dots.changed;

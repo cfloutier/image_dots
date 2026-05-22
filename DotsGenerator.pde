@@ -178,6 +178,14 @@ class DotsGenerator
     }
   }
 
+  BoundingBox getBoundingBox()
+  {
+    BoundingBox bbox = new BoundingBox();
+    for (PVector p : points)
+      bbox.addPoint(p);
+    return bbox;
+  }
+
   // Mapping exponentiel en r (log-lineaire) :
   //
   //   r_local = r_min * contrast ^ (t_norm ^ gamma)
