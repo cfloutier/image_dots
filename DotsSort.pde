@@ -211,6 +211,4 @@ class DotsSort
       current_graphics.line(a.x, a.y, b.x, b.y);
     }
   }
-
-  int progress() { return isComplete ? 100 : 0; }
 }
