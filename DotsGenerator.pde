@@ -197,7 +197,7 @@ class DotsGenerator
   private float _getRLocal(PVector p)
   {
     float pixel = _image.getPixelValue(p);
-    if (pixel == -1 || _image.blurred_image == null)
+    if (pixel == -1 || _image.transformed_image == null)
       return -1;
     // seuil dur : rejet immediat si pixel trop clair
     if (pixel > _threshold)

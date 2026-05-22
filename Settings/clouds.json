@@ -9,28 +9,32 @@
     "lineColor": -13877680,
     "lineWidth": 1.899999976158142
   },
+  "Sort": {
+    "hex_size": 38.599998474121094,
+    "enabled": true
+  },
   "Page": {
     "clipping": false,
     "clip_width": 0,
-    "margin": 2,
+    "margin": 1,
     "clip_height": 0,
-    "paper_format": 0,
+    "paper_format": 1,
     "global_scale": 1
   },
   "Dots": {
     "min_value": 0,
-    "density": 1.5820000171661377,
+    "density": 1.1660001277923584,
     "invert": false,
     "seed": 82451,
-    "contrast": 8.829999923706055,
+    "contrast": 20.33333396911621,
     "threshold": 255,
-    "gamma": 1.9279999732971191,
-    "max_value": 200.60000610351562
+    "gamma": 3.630000114440918,
+    "max_value": 226.10000610351562
   },
   "Image": {
     "reset_image": false,
     "Blur": 1,
-    "Width": 1688.0001220703125,
+    "Width": 1172,
     "Contrast": 0,
     "source_file": "pngtree-clouds-from-an-aeroplane-against-a-sunset-image_13118846.jpg"
   }
