@@ -8,7 +8,9 @@ DataGUI dataGui;
 DotsGenerator generator;
 DotsRenderer renderer;
 DotsSort sorter;
-boolean _sort_dirty = false;
+ShapesGroup shapes_group;
+boolean _sort_dirty   = false;
+boolean _shapes_dirty = false;
 PGraphics current_graphics;
 ControlP5 cp5;
 
@@ -23,8 +25,10 @@ void setup()
   generator = new DotsGenerator();
   renderer = new DotsRenderer();
   sorter = new DotsSort();
+  shapes_group = new ShapesGroup();
 
   setupControls();
+  file_ui.export_shapes = shapes_group;
 
   data.LoadSettings("./Settings/default.json");
   dataGui.setGUIValues();
@@ -39,8 +43,8 @@ void setupControls()
 
 void draw()
 {
-  if (generator.isComplete && generator.points.size() > 0)
-    file_ui.updateExportScale(generator.getBoundingBox());
+  if (shapes_group.totalCount() > 0)
+    file_ui.updateExportScale(shapes_group.getBoundingBox(data.page.clipping, data.page.clip_width, data.page.clip_height));
 
   start_draw();
 
@@ -51,6 +55,7 @@ void draw()
   boolean image_changed = data.image.changed;
   boolean dots_changed  = data.dots.changed;
   boolean sort_changed  = data.sort.changed;
+  boolean shape_changed = data.shape.changed;
 
   // toujours réinitialiser (couvre aussi style et page)
   data.reset_all_changes();
@@ -69,6 +74,9 @@ void draw()
   if (sort_changed)
     _sort_dirty = true;
 
+  if (shape_changed)
+    _shapes_dirty = true;
+
   if (!generator.isComplete)
     generator.resume();
 
@@ -77,6 +85,15 @@ void draw()
   {
     sorter.start(generator.points, data.sort.hex_size);
     _sort_dirty = false;
+    _shapes_dirty = true;
+  }
+
+  // Reconstruction du ShapesGroup dès que le tri est prêt et les données ont changé
+  if (sorter.isComplete && _shapes_dirty)
+  {
+    renderer.buildShapesGroup(sorter.sorted, data.shape, shapes_group);
+    file_ui.updateExportScale(shapes_group.getBoundingBox(data.page.clipping, data.page.clip_width, data.page.clip_height));
+    _shapes_dirty = false;
   }
 
   // Phase 3 : rendu — les shapes sont dessinées à partir du résultat du tri

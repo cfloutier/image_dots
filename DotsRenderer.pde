@@ -54,4 +54,33 @@ class DotsRenderer
     if (verbose)
       println("Export dots: done. Saving in progress... Please wait");
   }
+
+  // Build a ShapesGroup from the given points for direct SVG export.
+  // MODE_POINT  → Dot entries (zero-length line in SVG, same stroke-width as polylines)
+  // MODE_POLYGON → Polyline entries (closed regular polygon)
+  void buildShapesGroup(ArrayList<PVector> points, DataShape shape, ShapesGroup group)
+  {
+    group.clear();
+    float r = shape.size / 2.0;
+    int   n = shape.sides;
+
+    if (shape.mode == DataShape.MODE_POINT)
+    {
+      for (PVector p : points)
+        group.addDot(p);
+    }
+    else
+    {
+      for (PVector p : points)
+      {
+        Polyline pl = new Polyline();
+        for (int j = 0; j <= n; j++)
+        {
+          float angle = TWO_PI * j / n - PI / 2;
+          pl.addPoint(new PVector(p.x + cos(angle) * r, p.y + sin(angle) * r));
+        }
+        group.addPolyline(pl);
+      }
+    }
+  }
 }
