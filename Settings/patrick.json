@@ -1,0 +1,44 @@
+{
+  "Shape": {
+    "mode": 0,
+    "size": 0.10000000149011612,
+    "sides": 12
+  },
+  "Style": {
+    "backgroundColor": -1,
+    "lineColor": -13877680,
+    "lineWidth": 1.4666666984558105
+  },
+  "Sort": {"hex_size": 10},
+  "Page": {
+    "clipping": false,
+    "clip_width": 0,
+    "margin": 0,
+    "clip_height": 0,
+    "paper_format": 2,
+    "global_scale": 1
+  },
+  "Dots": {
+    "min_value": 0,
+    "density": 1.4000000953674316,
+    "invert": false,
+    "seed": 82451,
+    "contrast": 12.503334045410156,
+    "threshold": 247.35000610351562,
+    "gamma": 2.310333490371704,
+    "max_value": 255
+  },
+  "Image": {
+    "levelsMax": 255,
+    "levelsGamma": 0.20000004768371582,
+    "reset_image": false,
+    "imageAlpha": 0,
+    "levelsMin": 0,
+    "Blur": 1,
+    "draw": true,
+    "Width": 1190,
+    "Contrast": 0,
+    "blackAndWhite": false,
+    "source_file": "Capture d'écran 2026-06-03 202942.png"
+  }
+}
