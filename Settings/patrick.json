@@ -6,21 +6,21 @@
   },
   "Style": {
     "backgroundColor": -1,
-    "lineColor": -13877680,
-    "lineWidth": 1.4666666984558105
+    "lineColor": -4246004,
+    "lineWidth": 1.850000023841858
   },
-  "Sort": {"hex_size": 10},
+  "Sort": {"hex_size": 59.78333282470703},
   "Page": {
     "clipping": false,
     "clip_width": 0,
-    "margin": 0,
+    "margin": 2,
     "clip_height": 0,
     "paper_format": 2,
     "global_scale": 1
   },
   "Dots": {
     "min_value": 0,
-    "density": 1.4000000953674316,
+    "density": 1.062000036239624,
     "invert": false,
     "seed": 82451,
     "contrast": 12.503334045410156,
