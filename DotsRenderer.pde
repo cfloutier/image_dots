@@ -6,10 +6,19 @@ class DotsRenderer
 {
   void draw(ArrayList<PVector> points, DataShape shape)
   {
-    draw(points, shape, false);
+    draw(points, shape, false, false, 0, 0);
   }
 
   void draw(ArrayList<PVector> points, DataShape shape, boolean verbose)
+  {
+    draw(points, shape, verbose, false, 0, 0);
+  }
+
+  // clipping/clip_w/clip_h: same semantics as export (xLib_ExportUtils.writeSVGDirect) -
+  // a point is kept if its center falls inside the clip rect centered on the drawing origin,
+  // so the preview matches what actually gets exported.
+  void draw(ArrayList<PVector> points, DataShape shape, boolean verbose,
+            boolean clipping, float clip_w, float clip_h)
   {
     int total    = points.size();
     int log_step = max(1, total / 10); // log tous les 10%
@@ -24,6 +33,7 @@ class DotsRenderer
         if (verbose && i % log_step == 0)
           println("  " + (i * 100 / total) + "%  (" + StringUtils.formatInt(i) + " / " + StringUtils.formatInt(total) + ")");
         PVector p = points.get(i);
+        if (clipping && !pointInClipRect(p.x, p.y, 0, 0, clip_w, clip_h)) continue;
         current_graphics.point(p.x, p.y);
       }
     }
@@ -40,6 +50,7 @@ class DotsRenderer
         if (verbose && i % log_step == 0)
           println("  " + (i * 100 / total) + "%  (" + StringUtils.formatInt(i) + " / " + StringUtils.formatInt(total) + ")");
         PVector p = points.get(i);
+        if (clipping && !pointInClipRect(p.x, p.y, 0, 0, clip_w, clip_h)) continue;
         current_graphics.beginShape();
         for (int j = 0; j <= n; j++)
         {

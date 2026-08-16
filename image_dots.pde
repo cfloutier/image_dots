@@ -109,7 +109,7 @@ void draw()
       end_draw();
       return;
     }
-    renderer.draw(sorter.sorted, data.shape, true);
+    renderer.draw(sorter.sorted, data.shape, true, data.page.clipping, data.page.clip_width, data.page.clip_height);
   }
   else
   {
@@ -118,15 +118,15 @@ void draw()
     {
       // Phase 1 en cours : points accumulés en live
       if (dataGui.dots_ui.draw)
-        generator.draw();
+        generator.draw(data.page.clipping, data.page.clip_width, data.page.clip_height);
       if (dataGui.shape_ui.draw)
-        renderer.draw(generator.points, data.shape, false);
+        renderer.draw(generator.points, data.shape, false, data.page.clipping, data.page.clip_width, data.page.clip_height);
     }
     else
     {
       // Phase 1 terminée (+ phase 2 terminée dans le même frame) : résultat final
       if (dataGui.dots_ui.draw)
-        generator.draw();
+        generator.draw(data.page.clipping, data.page.clip_width, data.page.clip_height);
 
       if (dataGui.sort_ui.draw_path)
         sorter.drawPath();
@@ -135,7 +135,7 @@ void draw()
         sorter.drawHexTransitions();
 
       if (dataGui.shape_ui.draw)
-        renderer.draw(sorter.sorted, data.shape, false);
+        renderer.draw(sorter.sorted, data.shape, false, data.page.clipping, data.page.clip_width, data.page.clip_height);
     }
   }
 

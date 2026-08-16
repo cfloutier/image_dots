@@ -173,7 +173,13 @@ class DotsGenerator
 
   void draw()
   {
+    draw(false, 0, 0);
+  }
+
+  void draw(boolean clipping, float clip_w, float clip_h)
+  {
     for (PVector p : points) {
+      if (clipping && !pointInClipRect(p.x, p.y, 0, 0, clip_w, clip_h)) continue;
       current_graphics.point(p.x, p.y);
     }
   }
