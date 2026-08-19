@@ -4,6 +4,16 @@ Implementation notes, algorithm details, and build procedure for `image_dots`. F
 
 ---
 
+## Development Setup
+
+Only needed to open/edit/run the sketch from source — not needed to just run a release build (see [README.md](README.md#getting-a-release)).
+
+1. **Install Processing**: download from https://processing.org/download and install (Java Mode, the default one).
+2. **Install ControlP5**: in the Processing IDE, go to `Sketch > Import Library... > Manage Libraries...`, search for **ControlP5**, and click Install. This puts it straight into your sketchbook's `libraries/` folder — no manual download/unzip needed. (Library home page, for reference: http://www.sojamo.de/libraries/controlP5)
+3. Open `image_dots.pde` in Processing and press Run.
+
+---
+
 ## Principle
 
 The final distribution is generated directly by varying `r` (the minimum distance between two points) based on the brightness of the pixel beneath each candidate:
