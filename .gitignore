@@ -4,3 +4,7 @@ data/marilyn*
 Settings/dalida.json
 Settings/david.json
 Settings/marilyn.json
+
+# export_app.ps1 build/release output
+build_*/
+releases/

@@ -4,6 +4,16 @@ Processing sketch that converts an image into a point cloud using **variable-den
 
 ---
 
+## Getting a Release
+
+No Processing, Java, or ControlP5 installation is required to run a release build — everything needed is bundled in the zip.
+
+1. Download the release zip (see `releases/` or wherever it was shared with you).
+2. Unzip it anywhere.
+3. Run the `.exe` inside — that's it.
+
+---
+
 ## Examples
 
 ### Eye — default settings
@@ -38,51 +48,6 @@ Same source image, higher density and larger canvas — full result and centre c
 
 ---
 
-## Principle
-
-The final distribution is generated directly by varying `r` (the minimum distance between two points) based on the brightness of the pixel beneath each candidate:
-
-```
-dark area   →  small r  →  close points   →  high density
-bright area →  large r  →  sparse points  →  low density
-```
-
-The **blue noise** property is maintained at all scales: no clusters, no gaps. The distribution is perceptually uniform at the local density dictated by the image.
-
----
-
-## r_local Formula
-
-Log-linear mapping (exponential in r):
-
-```
-r_local = r_min × contrast ^ (t_norm ^ gamma)
-```
-
-- `t_norm` ∈ [0, 1]: normalized pixel brightness after clamping to `[min_value, max_value]`, then optional inversion
-- `t_norm = 0` (black) → `r_local = r_min` (high density)
-- `t_norm = 1` (white) → `r_local = r_min × contrast` = `r_max` (low density)
-
-This mapping ensures that the same brightness difference multiplies `r` by the same factor across the entire tonal range, regardless of the starting grey level.
-
----
-
-## Architecture
-
-| File | Role |
-|------|------|
-| `image_dots.pde` | Setup, draw loop, HUD |
-| `DataGlobal.pde` | `ImageDotsData` — aggregates image, style, dots, shape |
-| `DataDots.pde` | Poisson parameters + Dots tab GUI |
-| `DataShape.pde` | Rendering parameters + Shape tab GUI |
-| `DataGUI.pde` | `MainPanel` — assembles the 5 tabs |
-| `DotsGenerator.pde` | Variable-density Poisson Disk Sampling algorithm |
-| `DotsRenderer.pde` | Point rendering (point mode or regular polygon) |
-| `DataSort.pde` | Sort parameters + Sort tab GUI |
-| `DotsSort.pde` | Hexagonal spiral sort algorithm |
-
----
-
 ## Dots Parameters
 
 | Parameter | Default | Role |
@@ -93,6 +58,7 @@ This mapping ensures that the same brightness difference multiplies `r` by the s
 | `min_value` | 0 | Pixels below this are treated as black (dense) |
 | `max_value` | 255 | Pixels above this are treated as white (empty) |
 | `invert` | false | Invert: bright areas become dense |
+| `threshold` | 255 | Hard cutoff: pixels above this get no point at all, regardless of `contrast` |
 | `seed` | 42 | Random seed |
 
 ## Shape Parameters
@@ -105,45 +71,26 @@ This mapping ensures that the same brightness difference multiplies `r` by the s
 
 ## Sort Parameters
 
+Sorting is always applied automatically once point generation completes (no `enabled` toggle) — see [Automatic Triggering](DEVELOPMENT.md#automatic-triggering).
+
 | Parameter | Default | Role |
 |-----------|---------|------|
-| `enabled` | false | Activate hexagonal spiral sort |
-| `hex_size` | 100 | Hexagon cell radius in pixels |
+| `hex_size` | 10 | Hexagon cell radius in pixels |
 
 ---
 
-## Implementation Details
-
-### Spatial Grid
-
-The cell size is `r_min / √2`, which guarantees that a cell contains at most one point.  
-The inspection radius is `ceil(r_max / cell) + 1` cells in each direction, to cover all potential neighbours even when `r_max >> r_min`.
-
-### Progressive Generation
-
-Generation is performed in 200 ms slices (`start()` + `resume()`), keeping the interface responsive during computation. The HUD displays the point count and computation time in real time.
-
-### Automatic Triggering
-
-The generator restarts automatically whenever an image or dots parameter changes. Style and shape parameters are applied without recomputation.
-
-### Hexagonal Spiral Sort
-
-The sort reorders points to minimise plotter travel distance, using a two-level strategy:
-
-1. **Cell assignment** — each point is mapped to a hexagonal grid cell using axial (pointy-top) coordinates. Cell size is controlled by `hex_size`.
-2. **Spiral traversal** — cells are visited in a ring-by-ring spiral from the centre cell outward (ring 0, then ring 1 with 6 cells, ring 2 with 12, etc.).
-3. **Local nearest-neighbour** — within each cell, points are ordered by nearest-neighbour starting from the last point of the previous cell, ensuring smooth inter-cell transitions.
-
-The result is a globally coherent spiral order with locally optimised segments. Smaller `hex_size` values approach a full nearest-neighbour sort; larger values make the spiral structure more pronounced.
-
-**Visualisation toggles (Sort tab):**
-- *Draw path* — draws the full point sequence with a rainbow gradient (red = start, violet = end)
-- *Draw hex transitions* — draws each hexagonal cell outline (rainbow-coloured) and the yellow centre-to-centre lines showing the spiral traversal order
+For the algorithm details, file architecture, and how to build a release yourself, see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ---
 
 ## Changelog
+
+### 2026-08-19
+- **Load / Save**: no longer opens a separate OS file-picker window (which could occasionally open hidden behind the main window) — replaced by an in-app file browser in the **Files** tab. Load and "Save as..." now show buttons for every settings file and folder inside `Settings/`, with a `..` button to go up a level and Prev/Next if there are many files. Saving over an existing file asks for confirmation first; saving under a new name uses a text field pre-filled with the current file's name.
+- **Clip Ratio**: the Files tab's clipping controls gained a ratio lock — pick `None` (free width/height, as before), `A4`, `16:9`, `4:3`, `Raisin`, or `1:1`, plus a `Landscape`/portrait toggle. With a ratio selected, dragging either the width or height slider keeps the other in proportion automatically.
+- **`export_app.ps1`**: new build script — exports the sketch as a standalone application (embeds a JRE and all libraries, including ControlP5), copies `Settings/` into the export (not included by `processing-java --export`, and required at startup), and zips the result into `releases/` as a ready-to-share release. Same script copied verbatim across projects, same convention as the shared `xLib_*.pde` files.
+- **README**: added a "Getting a Release" section (download, unzip, run) at the top; split implementation/algorithm details and the build procedure out into a new [DEVELOPMENT.md](DEVELOPMENT.md).
+- **`.gitignore`**: ignore `build_*/` and `releases/` (generated build output).
 
 ### 2026-05-11
 - **Sort tab**: new `DataSort` + `SortGUI` — hexagonal spiral sort (`DotsSort`) to optimise plotter travel order.
