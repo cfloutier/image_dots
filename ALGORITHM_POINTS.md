@@ -100,9 +100,3 @@ get exactly the same point cloud every time — which makes it possible to
 reproduce or compare results. Changing the seed gives a new layout, while
 keeping the same overall look (the same recognisable image, just "seeded"
 differently).
-
----
-
-*This document is a first pass at a plain-English explanation — to be
-refined based on whatever details readers find most interesting (Poisson
-Disk Sampling as a technique, GUI settings, etc.).*
