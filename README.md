@@ -2,6 +2,8 @@
 
 Processing sketch that converts an image into a point cloud using **variable-density Poisson Disk Sampling**.
 
+New to the algorithm? Read the plain-English walkthrough: [ALGORITHM_POINTS.md](ALGORITHM_POINTS.md) (also available [in French](ALGORITHME_POINTS.md)).
+
 ---
 
 ## Getting a Release
@@ -84,6 +86,9 @@ For the algorithm details, file architecture, and how to build a release yoursel
 ---
 
 ## Changelog
+
+### 2026-08-22
+- **Debug tab**: new `DataDebug` + `DebugGUI` — tools to observe the point-generation propagation for producing illustrations: *Pause* (freezes generation), *Slow Mode* + *Steps / Frame* (caps `resume()` to a handful of attempts per frame instead of its usual time budget), *Show Active* + *Active Color* (highlights the points still eligible to spawn neighbours, in a configurable colour), *New Seed* (relaunches generation with a fresh random seed without switching to the Dots tab), and *Clear* (empties the point cloud without relaunching — use *New Seed* afterwards to regenerate). Display/pacing-only — the resulting point cloud is unchanged. *Active Color* uses the same swatch picker as the Style tab (`ColorGroup`), not ControlP5's `ColorPicker` — tried first, but its object/field reflection binding silently never writes back to the target field.
 
 ### 2026-08-19
 - **Load / Save**: no longer opens a separate OS file-picker window (which could occasionally open hidden behind the main window) — replaced by an in-app file browser in the **Files** tab. Load and "Save as..." now show buttons for every settings file and folder inside `Settings/`, with a `..` button to go up a level and Prev/Next if there are many files. Saving over an existing file asks for confirmation first; saving under a new name uses a text field pre-filled with the current file's name.

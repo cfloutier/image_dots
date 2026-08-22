@@ -56,6 +56,7 @@ This mapping ensures that the same brightness difference multiplies `r` by the s
 | `DotsRenderer.pde` | Point rendering (point mode or regular polygon) |
 | `DataSort.pde` | Sort parameters + Sort tab GUI |
 | `DotsSort.pde` | Hexagonal spiral sort algorithm |
+| `DataDebug.pde` | Debug parameters + Debug tab GUI |
 
 ---
 
@@ -87,6 +88,16 @@ The result is a globally coherent spiral order with locally optimised segments. 
 **Visualisation toggles (Sort tab):**
 - *Draw path* — draws the full point sequence with a rainbow gradient (red = start, violet = end)
 - *Draw hex transitions* — draws each hexagonal cell outline (rainbow-coloured) and the yellow centre-to-centre lines showing the spiral traversal order
+
+### Debug Tab
+
+Diagnostic-only controls to observe `DotsGenerator`'s propagation without changing the final result (the same point cloud is produced no matter how it's watched):
+
+- *Pause* — stops calling `resume()` altogether; generation stays frozen mid-way.
+- *Slow Mode* + *Steps / Frame* — caps `resume()` to a small number of active-point attempts per call instead of the usual `MAX_MILLIS` time budget, so propagation advances visibly frame by frame.
+- *Show Active* + *Active Color* — draws the current `_active` list (points still eligible to spawn neighbours) over the normal point cloud, via `DotsGenerator.drawActive(color)`, in the swatch colour picked from *Active Color*. Uses the same `ColorGroup`/`ColorRef` swatch picker as the Style tab's Line/Background colours — not ControlP5's `ColorPicker` widget (`GUIPanel.addColorPicker`, bound via `cp5.addColorPicker(object, field)`): that reflection-based binding never actually writes back into the target field, so the picker moved visually but the drawn colour stayed stuck at its default. Untested/unused elsewhere in this codebase — avoid it for future colour controls.
+- *New Seed* — draws a new random `dots.seed` and marks `dots`/`data` changed, restarting generation from scratch (same action as the Dots tab's own "New Seed" button, duplicated here for convenience while using the other Debug controls).
+- *Clear* — `DotsGenerator.clear()` empties `points`/`_active` and marks `isComplete = true`, without restarting. Sets `_sort_dirty = true` so the (now empty) point list flows through the sort/shape-rebuild pipeline on the next frame, keeping `sorter.sorted`/`shapes_group` in sync instead of showing a stale result. Generation stays empty until *New Seed* (or an image/Dots-tab change) restarts it.
 
 ---
 

@@ -2,6 +2,9 @@
 
 ## Le principe.
 
+![marilyn_progress](docs/marilyn_progress.gif)
+
+
 on part d'un premier point au centre, puis fait "germer" de nouveaux points
 autour de chaque point déjà posé, un peu comme une plante qui pousse ou une 
 colonie de bactéries des branches dans toutes les directions — jusqu'à ce 

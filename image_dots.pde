@@ -78,7 +78,11 @@ void draw()
     _shapes_dirty = true;
 
   if (!generator.isComplete)
-    generator.resume();
+  {
+    generator.maxIterationsPerResume = data.debug.slow_mode ? data.debug.steps_per_frame : Integer.MAX_VALUE;
+    if (!data.debug.paused)
+      generator.resume();
+  }
 
   // Phase 2 : trier — déclenché une seule fois dès que la génération est terminée
   if (generator.isComplete && _sort_dirty)
@@ -121,6 +125,8 @@ void draw()
         generator.draw(data.page.clipping, data.page.clip_width, data.page.clip_height);
       if (dataGui.shape_ui.draw)
         renderer.draw(generator.points, data.shape, false, data.page.clipping, data.page.clip_width, data.page.clip_height);
+      if (data.debug.show_active)
+        generator.drawActive(data.debug.active_color.col, data.page.clipping, data.page.clip_width, data.page.clip_height);
     }
     else
     {

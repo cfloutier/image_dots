@@ -32,6 +32,11 @@ class DotsGenerator
   int     totalCalcMillis  = 0;
   private long _startMillis = 0;
 
+  // Debug : cap sur le nb de tentatives de propagation par appel a resume(),
+  // en plus du budget temps (MAX_MILLIS). Laisse a Integer.MAX_VALUE, il n'a
+  // aucun effet - le tab Debug l'abaisse pour ralentir la propagation visible.
+  int maxIterationsPerResume = Integer.MAX_VALUE;
+
   private ArrayList<PVector> _active;
   private int[]   _grid;
   private int     _cols;
@@ -53,6 +58,17 @@ class DotsGenerator
   private DataImage _image;
 
   static final int MAX_MILLIS = 200;
+
+  // Debug : vide le nuage de points et arrete la propagation en cours, sans
+  // relancer - contrairement a start(), qui repart d'un point au centre.
+  void clear()
+  {
+    points.clear();
+    if (_active != null) _active.clear();
+    isComplete       = true;
+    lastResumeMillis = 0;
+    totalCalcMillis  = 0;
+  }
 
   void start(DataDots data, DataImage image, float w, float h)
   {
@@ -103,17 +119,19 @@ class DotsGenerator
   {
     if (isComplete) return true;
 
-    long t0       = System.currentTimeMillis();
-    long deadline = t0 + MAX_MILLIS;
+    long t0        = System.currentTimeMillis();
+    long deadline  = t0 + MAX_MILLIS;
+    int  iterations = 0;
 
     while (_active.size() > 0)
     {
-      if (stop_compute || System.currentTimeMillis() >= deadline)
+      if (stop_compute || System.currentTimeMillis() >= deadline || iterations >= maxIterationsPerResume)
       {
         lastResumeMillis  = (int)(System.currentTimeMillis() - t0);
         totalCalcMillis   = (int)(System.currentTimeMillis() - _startMillis);
         return false;
       }
+      iterations++;
 
       int idx   = (int)random(_active.size());
       PVector p = _active.get(idx);
@@ -179,6 +197,24 @@ class DotsGenerator
   void draw(boolean clipping, float clip_w, float clip_h)
   {
     for (PVector p : points) {
+      if (clipping && !pointInClipRect(p.x, p.y, 0, 0, clip_w, clip_h)) continue;
+      current_graphics.point(p.x, p.y);
+    }
+  }
+
+  // Debug : dessine les points encore actifs (susceptibles de faire naitre
+  // de nouveaux voisins) en rouge, par-dessus le nuage de points normal.
+  void drawActive(color activeColor)
+  {
+    drawActive(activeColor, false, 0, 0);
+  }
+
+  void drawActive(color activeColor, boolean clipping, float clip_w, float clip_h)
+  {
+    if (_active == null) return;
+
+    current_graphics.stroke(activeColor);
+    for (PVector p : _active) {
       if (clipping && !pointInClipRect(p.x, p.y, 0, 0, clip_w, clip_h)) continue;
       current_graphics.point(p.x, p.y);
     }
