@@ -14,21 +14,9 @@ class DataDebug extends GenericData
   boolean slow_mode       = false; // limite resume() a "steps_per_frame" tentatives par frame
   int     steps_per_frame = 10;    // nb de tentatives de propagation par frame quand slow_mode est actif
   boolean show_active     = false; // dessine les points actifs pendant la generation
-  ColorRef active_color   = new ColorRef(color(255, 0, 0), "active_color");
-
-  void LoadJson(JSONObject src)
-  {
-    super.LoadJson(src);
-    if (src == null) return;
-    active_color.LoadJson(src);
-  }
-
-  JSONObject SaveJson()
-  {
-    JSONObject dest = super.SaveJson();
-    active_color.SaveJson(dest);
-    return dest;
-  }
+  color   active_color    = color(255, 0, 0);
+  // no LoadJson/SaveJson override needed - GenericData's generic reflection
+  // already handles `color` fields (color IS int at the JVM level).
 }
 
 class DebugGUI extends GUIPanel
@@ -61,7 +49,10 @@ class DebugGUI extends GUIPanel
     nextLine();
     show_active = addToggle("show_active", "Show Active", debug);
     nextLine();
-    active_color = addColorGroup("Active Color", debug.active_color);
+    active_color = addColorGroup("Active Color", new ColorSetter()
+    {
+      public void setColor(color c) { debug.active_color = c; debug.changed = true; }
+    });
     newSeedButton = addButton("New Seed");
     clearButton = addButton("Clear");
   }
@@ -72,7 +63,6 @@ class DebugGUI extends GUIPanel
     slow_mode.setValue(debug.slow_mode);
     steps_per_frame.setValue(debug.steps_per_frame);
     show_active.setValue(debug.show_active);
-    active_color.colorRef = debug.active_color;
   }
 
   public void controlEvent(ControlEvent theEvent)

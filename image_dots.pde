@@ -126,7 +126,7 @@ void draw()
       if (dataGui.shape_ui.draw)
         renderer.draw(generator.points, data.shape, false, data.page.clipping, data.page.clip_width, data.page.clip_height);
       if (data.debug.show_active)
-        generator.drawActive(data.debug.active_color.col, data.page.clipping, data.page.clip_width, data.page.clip_height);
+        generator.drawActive(data.debug.active_color, data.page.clipping, data.page.clip_width, data.page.clip_height);
     }
     else
     {
@@ -156,7 +156,7 @@ void drawHUD(int drawMillis)
   int bar_x = 20;
   int bar_y = height - 10;
 
-  color bg = data.style.backgroundColor.col;
+  color bg = data.style.backgroundColor;
   color fg = color(255 - red(bg), 255 - green(bg), 255 - blue(bg));
 
   fill(fg);
