@@ -60,7 +60,7 @@ Same source image, higher density and larger canvas — full result and centre c
 | `min_value` | 0 | Pixels below this are treated as black (dense) |
 | `max_value` | 255 | Pixels above this are treated as white (empty) |
 | `invert` | false | Invert: bright areas become dense |
-| `threshold` | 255 | Hard cutoff: pixels above this get no point at all, regardless of `contrast` |
+| `threshold` | 255 | Hard cutoff, measured from the "empty" extreme (white normally, black when `invert` is on): pixels past it get no point at all, regardless of `contrast` |
 | `seed` | 42 | Random seed |
 
 ## Shape Parameters
@@ -86,6 +86,9 @@ For the algorithm details, file architecture, and how to build a release yoursel
 ---
 
 ## Changelog
+
+### 2026-08-26
+- **Fix**: `threshold` now follows `invert`. It used to always reject pixels brighter than the cutoff, even with `invert` on — where dark areas are the dense ones and bright areas are meant to be filtered out, not kept. `_getRLocal()` now measures the cutoff from whichever extreme is currently "empty" (white normally, black when `invert` is on).
 
 ### 2026-08-22
 - **Debug tab**: new `DataDebug` + `DebugGUI` — tools to observe the point-generation propagation for producing illustrations: *Pause* (freezes generation), *Slow Mode* + *Steps / Frame* (caps `resume()` to a handful of attempts per frame instead of its usual time budget), *Show Active* + *Active Color* (highlights the points still eligible to spawn neighbours, in a configurable colour), *New Seed* (relaunches generation with a fresh random seed without switching to the Dots tab), and *Clear* (empties the point cloud without relaunching — use *New Seed* afterwards to regenerate). Display/pacing-only — the resulting point cloud is unchanged. *Active Color* uses the same swatch picker as the Style tab (`ColorGroup`), not ControlP5's `ColorPicker` — tried first, but its object/field reflection binding silently never writes back to the target field.
