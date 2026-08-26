@@ -249,8 +249,10 @@ class DotsGenerator
     float pixel = _image.getPixelValue(p);
     if (pixel == -1 || _image.transformed_image == null)
       return -1;
-    // seuil dur : rejet immediat si pixel trop clair
-    if (pixel > _threshold)
+    // seuil dur : rejet immediat si le pixel est trop proche de l'extremite
+    // "vide" - le blanc en mode normal, le noir en mode invert
+    float t_empty = _invert ? (255.0 - pixel) : pixel;
+    if (t_empty > _threshold)
       return -1;
     // applique les seuils et normalise dans [0, 1]
     float t_clamped = constrain(pixel, _min_value, _max_value);

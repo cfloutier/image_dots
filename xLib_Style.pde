@@ -12,6 +12,14 @@ class Style extends GenericData
   ColorRef backgroundColor = new ColorRef(color(0, 0, 0), "backgroundColor");
   float lineWidth = 1;
 
+  void swapLineBackground()
+  {
+    color tmp = lineColor.col;
+    lineColor.col = backgroundColor.col;
+    backgroundColor.col = tmp;
+    changed = true;
+  }
+
   void LoadJson(JSONObject src)
   {
     if (src == null)

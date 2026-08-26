@@ -46,19 +46,19 @@ class DotsGUI extends GUIPanel
     super.Init();
 
     draw_toggle   = addToggle("draw_dots", "Draw");
-    invert_toggle = addToggle("invert",    "Invert");
+    invert_toggle = addToggle("invert", "Invert");
     nextLine();
-    density       = addSlider("density",  "Density",      0.1, 4.0);
+    density       = addSlider("density", "Density", 0.1, 4.0);
     nextLine();
-    contrast      = addSlider("contrast",  "Contrast",     1.0, 30);
+    contrast      = addSlider("contrast", "Contrast", 1.0, 30);
     nextLine();
-    gamma         = addSlider("gamma",     "Gamma",        0.3, 4.0);
+    gamma         = addSlider("gamma", "Gamma", 0.3, 4.0);
     nextLine();
-    min_value     = addSlider("min_value", "Min Value",    0, 255);
+    min_value     = addSlider("min_value", "Min Value", 0, 255);
     nextLine();
-    max_value     = addSlider("max_value", "Max Value",    0, 255);
+    max_value     = addSlider("max_value", "Max Value", 0, 255);
     nextLine();
-    threshold     = addSlider("threshold", "Threshold",    0, 255);
+    threshold     = addSlider("threshold", "Threshold", 200, 255);
     nextLine();
     seedLabel     = inlineLabel("Seed: " + dots.seed, 160);
     newSeedButton = addButton("New Seed");
@@ -99,6 +99,12 @@ class DotsGUI extends GUIPanel
         data.changed = true;
         update_ui();
         return;
+      }
+      if (c == invert_toggle)
+      {
+        println("DEBUG invert_toggle clicked, dots.invert=" + dots.invert + ", lineColor before=" + data.style.lineColor.col + " bg before=" + data.style.backgroundColor.col);
+        data.style.swapLineBackground();
+        println("DEBUG after swap, lineColor=" + data.style.lineColor.col + " bg=" + data.style.backgroundColor.col);
       }
     }
     super.controlEvent(theEvent);

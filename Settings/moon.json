@@ -1,0 +1,53 @@
+{
+  "Shape": {
+    "mode": 1,
+    "size": 0.26333335041999817,
+    "sides": 12
+  },
+  "Style": {
+    "backgroundColor": -16777216,
+    "lineColor": -1,
+    "lineWidth": 3.316666841506958
+  },
+  "Sort": {"hex_size": 10},
+  "Page": {
+    "clip_landscape": false,
+    "clipping": false,
+    "clip_width": 0,
+    "margin": 0,
+    "clip_aspect_ratio": 0,
+    "clip_height": 0,
+    "paper_format": 2,
+    "global_scale": 0.6024097204208374
+  },
+  "Dots": {
+    "min_value": 66.30000305175781,
+    "density": 2.2709999084472656,
+    "invert": true,
+    "seed": 82451,
+    "contrast": 15.59666633605957,
+    "threshold": 249.68333435058594,
+    "gamma": 1.249666690826416,
+    "max_value": 255
+  },
+  "Image": {
+    "levelsMax": 255,
+    "levelsGamma": 0,
+    "reset_image": false,
+    "imageAlpha": 0,
+    "levelsMin": 0,
+    "Blur": 1,
+    "draw": true,
+    "Width": 1292,
+    "Contrast": 0,
+    "blackAndWhite": true,
+    "source_file": "art002e009281~large.jpg"
+  },
+  "Debug": {
+    "steps_per_frame": 10,
+    "show_active": false,
+    "paused": false,
+    "active_color": -65536,
+    "slow_mode": false
+  }
+}
