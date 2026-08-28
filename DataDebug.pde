@@ -27,7 +27,7 @@ class DebugGUI extends GUIPanel
   Toggle slow_mode;
   Slider steps_per_frame;
   Toggle show_active;
-  ColorGroup active_color;
+  Button active_color;
   Button newSeedButton;
   Button clearButton;
 
@@ -49,8 +49,9 @@ class DebugGUI extends GUIPanel
     nextLine();
     show_active = addToggle("show_active", "Show Active", debug);
     nextLine();
-    active_color = addColorGroup("Active Color", new ColorSetter()
+    active_color = addColorChooser("Active Color", new ColorSetter()
     {
+      public color getColor() { return debug.active_color; }
       public void setColor(color c) { debug.active_color = c; debug.changed = true; }
     });
     newSeedButton = addButton("New Seed");
@@ -63,6 +64,7 @@ class DebugGUI extends GUIPanel
     slow_mode.setValue(debug.slow_mode);
     steps_per_frame.setValue(debug.steps_per_frame);
     show_active.setValue(debug.show_active);
+    active_color.setColorBackground(debug.active_color);
   }
 
   public void controlEvent(ControlEvent theEvent)
