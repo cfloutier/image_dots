@@ -78,6 +78,22 @@ class CustomModeButton
   }
 }
 
+// Click handler for Custom mode's "OK" button.
+class OkButton
+{
+  ColorChooserPopup popup;
+
+  OkButton(ColorChooserPopup popup)
+  {
+    this.popup = popup;
+  }
+
+  void onClic()
+  {
+    popup.close();
+  }
+}
+
 // Value-changed listeners for the custom picker's two sliders. Named classes
 // rather than anonymous ones, matching PaletteSwitcher/CustomModeButton -
 // ColorButton.onClic() already proves .plugTo(obj, "methodName") works for a
@@ -178,6 +194,7 @@ public class ColorChooserPopup
   int _activePalette = 0;
   boolean _customMode = false;
   Button customButton;
+  Button okButton;
   Slider2D svSlider;
   Slider hueSlider;
   PImage _svImage;
@@ -289,6 +306,18 @@ public class ColorChooserPopup
     _hueImage = buildHueImage(HUE_WIDTH, SV_SIZE);
     hueSlider.plugTo(new HueSliderListener(this), "onChange");
     hueSlider.hide();
+
+    // Custom mode has no discrete "pick" moment like a swatch click (you
+    // drag hue and saturation/brightness separately, often several times) -
+    // an explicit OK is how you say "done" and close the popup, rather than
+    // relying on switching tabs.
+    okButton = cp5.addButton("colorok")
+      .setLabel("OK")
+      .setPosition(_svX, _svY + SV_SIZE + 30)
+      .setSize(90, 20)
+      .moveTo("default");
+    okButton.plugTo(new OkButton(this), "onClic");
+    okButton.hide();
   }
 
   // Called from spiral.pde's draw(), after end_draw() (absolute screen
@@ -455,6 +484,7 @@ public class ColorChooserPopup
 
     svSlider.show();
     hueSlider.show();
+    okButton.show();
 
     refreshHighlight();
   }
@@ -465,6 +495,7 @@ public class ColorChooserPopup
     {
       svSlider.hide();
       hueSlider.hide();
+      okButton.hide();
     } else
     {
       for (ColorButton b : _groups.get(_activePalette).buttons)
@@ -520,19 +551,29 @@ public class ColorChooserPopup
 
 // Creates the global `colorPopup` (still has to be declared per-project -
 // `ColorChooserPopup colorPopup;` next to `cp5` - Java requires the field
-// itself to exist in the sketch's own class), registers the built-in
-// palettes, and hooks its draw() in. Call once from setupControls(), right
-// after `cp5 = new ControlP5(this);` - registerMethod("draw", colorPopup)
-// needs to run after that so Processing calls it after ControlP5's own
-// registered draw callback (registration order = call order), which is what
-// lets the SV/hue gradients draw on top of ControlP5's rendering instead of
-// underneath it (see ColorChooserPopup.draw()/drawCustomBackgrounds()).
+// itself to exist in the sketch's own class) and registers the built-in
+// palettes. Call once from setupControls(), right after
+// `cp5 = new ControlP5(this);`.
 void setupColorPopup()
+{
+  setupColorPopup(true);
+}
+
+// autoDraw=false skips registerMethod("draw", colorPopup) - use this in a
+// P3D sketch (or anywhere else auto-registered draw callbacks run with GL
+// state you don't control, see trace_3d.pde's drawControlP5()/cp5.setAutoDraw
+// (false) for the exact same problem already solved for ControlP5's own
+// rendering) and call `colorPopup.draw()` manually instead, at whatever
+// point in your own draw loop has the right state (for trace_3d: right after
+// cp5.draw() inside drawControlP5(), still inside the
+// hint(DISABLE_DEPTH_TEST) bracket).
+void setupColorPopup(boolean autoDraw)
 {
   colorPopup = new ColorChooserPopup();
   colorPopup.registerPalette("Default", DEFAULT_COLOR_PALETTE);
   colorPopup.registerPalette("Rainbow", RAINBOW_COLOR_PALETTE);
   colorPopup.registerPalette("POSCA", POSCA_COLOR_PALETTE);
   colorPopup.registerPalette("Stabilo 88", STABILO88_COLOR_PALETTE);
-  registerMethod("draw", colorPopup);
+  if (autoDraw)
+    registerMethod("draw", colorPopup);
 }

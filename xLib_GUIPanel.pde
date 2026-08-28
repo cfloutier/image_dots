@@ -11,9 +11,18 @@ static final int StartY = 20;
 // before dataGui.Init().
 void init_xlib()
 {
+  init_xlib(true);
+}
+
+// autoDrawColorPopup=false skips wiring the color popup's automatic
+// registerMethod("draw", ...) callback - see setupColorPopup(boolean) in
+// xLib_ColorChooser.pde for when/why (P3D sketches with manual ControlP5
+// drawing, like trace_3d, need this).
+void init_xlib(boolean autoDrawColorPopup)
+{
   cp5 = new ControlP5(this);
   cp5.getTab("default").setLabel("Hide GUI");
-  setupColorPopup();
+  setupColorPopup(autoDrawColorPopup);
 }
 
 static class LabelsHandler
@@ -426,8 +435,10 @@ class GUIPanel implements ControlListener
   // swatch (had to move the mouse away and back to get it to register).
   Button addColorChooser(String name, ColorSetter target)
   {
-    inlineLabel(name, 100);
 
+    yPos += 6;
+
+    inlineLabel(name, 100);
     cp5.addButton("colorchooserframe" + indexControler)
       .setPosition(xPos - 2, yPos - 2)
       .setSize(24, 24)
@@ -446,9 +457,11 @@ class GUIPanel implements ControlListener
     bt.bringToFront();
 
     indexControler++;
-    xPos += 26;
+    xPos += 30;
 
     bt.plugTo(new ColorChooserTrigger(pageName, target, bt), "onClic");
+
+    nextLine();
 
     return bt;
   }

@@ -34,6 +34,7 @@ class DotsGUI extends GUIPanel
   Slider threshold;
   Textlabel seedLabel;
   Button newSeedButton;
+  long _lastInvertSwapMillis = 0;
 
   DotsGUI(DataDots dots)
   {
@@ -99,6 +100,30 @@ class DotsGUI extends GUIPanel
         data.changed = true;
         update_ui();
         return;
+      }
+      if (c == invert_toggle)
+      {
+        // Handled here (controlEvent(), reflection-bound toggle) rather than
+        // via plugTo() like most other buttons this session: controlEvent()
+        // is the one path already proven to respect cp5.setBroadcast(false)
+        // (see MainPanel.setGUIValues()'s own comment) - needed so loading a
+        // settings file with invert=true doesn't itself trigger a color
+        // swap, only a real click does. No `return` - falls through to
+        // super.controlEvent() same as before, so dots.changed/data.changed
+        // still get marked normally.
+        //
+        // The millis() debounce guards against an earlier, separate bug: the
+        // very first attempt at this (image_dots, pre-ColorChooser-rewrite)
+        // found controlEvent() firing twice for a single click on this exact
+        // reflection-bound toggle, silently swapping the colors there and
+        // back. Root cause never fully pinned down; this makes the fix
+        // correct regardless of how many times it turns out to fire.
+        long now = millis();
+        if (now - _lastInvertSwapMillis >= 50)
+        {
+          _lastInvertSwapMillis = now;
+          dataGui.style_ui.invertColors();
+        }
       }
     }
     super.controlEvent(theEvent);

@@ -1,12 +1,32 @@
 String get_xlib_version()
 {
-  return "4.0.0";
+  return "4.3.0";
 }
 
 
 /*
 
  # CHANGELOG
+
+ ## [4.3.0] - 2026-08-27
+ - Style tab: new "Invert" button swaps Line Color / Background Color (and re-tints both
+ trigger buttons to match).
+
+ ## [4.2.1] - 2026-08-27
+ - Custom mode's OK button given more clearance below the SV square (was crowding the
+ Slider2D's own "0,0" value label right beneath it).
+
+ ## [4.2.0] - 2026-08-27
+ - Custom mode now has an "OK" button (below the SV square) to close the popup - unlike a
+ swatch click, dragging the hue/SV controls has no discrete "done" moment, so it used to
+ only close by switching tabs, which wasn't obvious.
+
+ ## [4.1.0] - 2026-08-27
+ - init_xlib()/setupColorPopup() gained an optional `boolean autoDraw` parameter
+ (defaults to true, matching prior behavior exactly). Pass false to skip the color
+ popup's automatic registerMethod("draw", colorPopup) and call colorPopup.draw()
+ manually instead, wherever your own draw loop has the right state for it - needed for
+ trace_3d (P3D, manual ControlP5 drawing via drawControlP5() for the same reason).
 
  ## [4.0.0] - 2026-08-27
  - New ColorChooser popup: replaces the big inline swatch grid with a small square
