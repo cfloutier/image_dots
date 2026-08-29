@@ -1,0 +1,53 @@
+{
+  "Shape": {
+    "mode": 0,
+    "size": 0.10000000149011612,
+    "sides": 12
+  },
+  "Style": {
+    "backgroundColor": -1,
+    "lineColor": -13877680,
+    "lineWidth": 2.75
+  },
+  "Sort": {"hex_size": 28.75},
+  "Page": {
+    "clip_landscape": false,
+    "clipping": false,
+    "clip_width": 0,
+    "margin": 2,
+    "clip_aspect_ratio": 0,
+    "clip_height": 0,
+    "paper_format": 1,
+    "global_scale": 1
+  },
+  "Dots": {
+    "min_value": 22.100000381469727,
+    "density": 1.309000015258789,
+    "invert": false,
+    "seed": 55422,
+    "contrast": 17.626667022705078,
+    "threshold": 255,
+    "gamma": 1.5456666946411133,
+    "max_value": 221
+  },
+  "Image": {
+    "levelsMax": 255,
+    "levelsGamma": 0.18666672706604004,
+    "reset_image": false,
+    "imageAlpha": 255,
+    "levelsMin": 62.65333557128906,
+    "Blur": 1,
+    "draw": false,
+    "Width": 668,
+    "Contrast": 0,
+    "blackAndWhite": true,
+    "source_file": "audrey.png"
+  },
+  "Debug": {
+    "steps_per_frame": 934,
+    "show_active": false,
+    "paused": false,
+    "active_color": -10215914,
+    "slow_mode": false
+  }
+}

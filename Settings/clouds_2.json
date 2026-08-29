@@ -1,0 +1,53 @@
+{
+  "Shape": {
+    "mode": 0,
+    "size": 0.10000000149011612,
+    "sides": 12
+  },
+  "Style": {
+    "backgroundColor": -1,
+    "lineColor": -13877680,
+    "lineWidth": 1.899999976158142
+  },
+  "Sort": {"hex_size": 38.599998474121094},
+  "Page": {
+    "clip_landscape": false,
+    "clipping": false,
+    "clip_width": 0,
+    "margin": 2,
+    "clip_aspect_ratio": 0,
+    "clip_height": 0,
+    "paper_format": 2,
+    "global_scale": 1
+  },
+  "Dots": {
+    "min_value": 0,
+    "density": 1.1660001277923584,
+    "invert": false,
+    "seed": 82451,
+    "contrast": 20.33333396911621,
+    "threshold": 255,
+    "gamma": 3.630000114440918,
+    "max_value": 226.10000610351562
+  },
+  "Image": {
+    "levelsMax": 255,
+    "levelsGamma": -0.18000000715255737,
+    "reset_image": false,
+    "imageAlpha": 255,
+    "levelsMin": 33.02000427246094,
+    "Blur": 1,
+    "draw": false,
+    "Width": 1172,
+    "Contrast": 0,
+    "blackAndWhite": false,
+    "source_file": "mer-de-nuages2.png"
+  },
+  "Debug": {
+    "steps_per_frame": 10,
+    "show_active": false,
+    "paused": false,
+    "active_color": -65536,
+    "slow_mode": false
+  }
+}
