@@ -87,6 +87,9 @@ For the algorithm details, file architecture, and how to build a release yoursel
 
 ## Changelog
 
+### 2026-08-28
+- **Image tab**: new *Reload* button next to *Select Source Image* — re-reads the current file from disk (for when it was edited externally, e.g. touched up in an image editor, after being loaded) and regenerates the point cloud, without needing to re-pick the file.
+
 ### 2026-08-26
 - **Removed `ColorRef`**: `xLib_Style.pde`'s `Style.lineColor`/`backgroundColor` are now plain `color` fields (no wrapper object) — `GenericData`'s generic reflection already round-trips `color` fields through JSON (same keys as before), so no custom `LoadJson`/`SaveJson` is needed anymore. The Style tab's swatch grid (`ColorGroup`/`ColorButton`, `xLib_ColorRef.pde`) now writes a picked color through a small `ColorSetter` callback interface instead of mutating a shared `ColorRef` object — `addColorGroup(label, ColorRef)` is now `addColorGroup(label, ColorSetter)`. The Debug tab's *Active Color* swatch was migrated the same way.
 - **Fix**: `threshold` now follows `invert`. It used to always reject pixels brighter than the cutoff, even with `invert` on — where dark areas are the dense ones and bright areas are meant to be filtered out, not kept. `_getRLocal()` now measures the cutoff from whichever extreme is currently "empty" (white normally, black when `invert` is on).

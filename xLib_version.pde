@@ -1,12 +1,17 @@
 String get_xlib_version()
 {
-  return "4.3.0";
+  return "4.4.0";
 }
 
 
 /*
 
  # CHANGELOG
+
+ ## [4.4.0] - 2026-08-28
+ - xLib_Image.pde: new *Reload* button next to *Select Source Image* - re-reads the
+ current file from disk (data.setImage(data.source_file)) without needing to re-pick it,
+ for when it was edited externally after being loaded.
 
  ## [4.3.0] - 2026-08-27
  - Style tab: new "Invert" button swaps Line Color / Background Color (and re-tints both
