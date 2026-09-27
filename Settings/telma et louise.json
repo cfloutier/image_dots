@@ -1,0 +1,53 @@
+{
+  "Shape": {
+    "mode": 0,
+    "size": 0.10000000149011612,
+    "sides": 12
+  },
+  "Style": {
+    "backgroundColor": -1,
+    "lineColor": -13877680,
+    "lineWidth": 1.783333420753479
+  },
+  "Sort": {"hex_size": 10},
+  "Page": {
+    "clip_landscape": false,
+    "clipping": false,
+    "clip_width": 0,
+    "margin": 2,
+    "clip_aspect_ratio": 0,
+    "clip_height": 0,
+    "paper_format": 2,
+    "global_scale": 1
+  },
+  "Dots": {
+    "min_value": 0,
+    "density": 1.374000072479248,
+    "invert": false,
+    "seed": 82451,
+    "contrast": 14.14666748046875,
+    "threshold": 255,
+    "gamma": 2.002000093460083,
+    "max_value": 207.39999389648438
+  },
+  "Image": {
+    "levelsMax": 255,
+    "levelsGamma": 0,
+    "reset_image": false,
+    "imageAlpha": 0,
+    "levelsMin": 0,
+    "Blur": 1,
+    "draw": true,
+    "Width": 776,
+    "Contrast": 0,
+    "blackAndWhite": false,
+    "source_file": "IMG-20260823-WA0003.jpg"
+  },
+  "Debug": {
+    "steps_per_frame": 10,
+    "show_active": false,
+    "paused": false,
+    "active_color": -65536,
+    "slow_mode": false
+  }
+}
